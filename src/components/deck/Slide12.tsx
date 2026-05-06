@@ -69,7 +69,10 @@ export default function Slide12() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <div className="text-center text-[var(--amber)] text-[11px] font-bold mt-1">↑ R$10K · ENTRADA IDEAL · leads ~10/mês</div>
+          <div className="flex justify-center gap-6 text-[11px] font-bold mt-1">
+            <span className="text-[var(--amber)]">↑ R$10K · ENTRADA IDEAL · ~10 leads/mês</span>
+            <span className="text-[var(--coral)]">↑ R$50K · ESCALA AGRESSIVA · ~58 leads/mês · R$360K receita</span>
+          </div>
         </FadeUp>
 
         {/* CLOSING */}
