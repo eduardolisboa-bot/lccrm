@@ -24,7 +24,7 @@ export default function Slide12() {
     <SlideShell>
       <div className="absolute inset-0 pointer-events-none"
         style={{ background: "radial-gradient(circle at 50% 90%, rgba(245,166,35,0.08), transparent 50%)" }} />
-      <div className="relative z-10 flex-1 px-8 md:px-14 py-8 flex flex-col gap-4 overflow-hidden">
+      <div className="relative z-10 flex-1 slide-pad flex flex-col gap-4 overflow-hidden">
         <FadeUp>
           <h2 className="text-xl md:text-[32px] font-semibold leading-tight">
             <span className="text-white">Se você investir R$10.000 em marketing digital,</span><br />

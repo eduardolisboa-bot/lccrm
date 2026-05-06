@@ -24,7 +24,7 @@ export default function Slide01({ active }: { active: boolean }) {
       <div className="absolute -right-40 top-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none"
         style={{ background: "radial-gradient(circle, rgba(13,158,135,0.18), transparent 70%)" }} />
 
-      <div className="relative z-10 grid grid-cols-1 md:grid-cols-[55%_45%] flex-1 px-12 md:px-24 py-24 gap-12 items-center">
+      <div className="relative z-10 grid grid-cols-1 md:grid-cols-[55%_45%] flex-1 slide-pad gap-12 items-center">
         <div className="flex flex-col gap-7">
           <FadeUp>
             <Pill className="bg-[var(--teal-mid)] text-white">E3 · Análise Competitiva Estratégica</Pill>

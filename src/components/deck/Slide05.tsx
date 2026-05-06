@@ -11,7 +11,7 @@ const ROWS = [
 export default function Slide05() {
   return (
     <SlideShell>
-      <div className="relative z-10 flex-1 px-10 md:px-16 py-12 flex flex-col gap-4 overflow-hidden">
+      <div className="relative z-10 flex-1 slide-pad flex flex-col gap-4 overflow-hidden">
         <FadeUp>
           <h2 className="text-white text-3xl md:text-[44px] font-semibold leading-tight">
             Por que a Prática fatura <span className="text-[var(--amber)]">50x mais?</span>

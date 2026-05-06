@@ -22,7 +22,7 @@ export default function Slide11() {
   };
   return (
     <SlideShell>
-      <div className="relative z-10 flex-1 px-10 md:px-16 py-10 flex flex-col gap-5 overflow-hidden">
+      <div className="relative z-10 flex-1 slide-pad flex flex-col gap-5 overflow-hidden">
         <FadeUp>
           <h2 className="text-3xl md:text-[42px] font-semibold leading-tight">
             <span className="text-[var(--amber)]">10 verdades</span>{" "}
@@ -30,23 +30,23 @@ export default function Slide11() {
           </h2>
         </FadeUp>
 
-        <div className="relative flex-1 flex items-center">
-          <button onClick={() => scroll(-1)}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white border border-white/20">
-            <ChevronLeft size={20} />
+        <div className="relative flex-1 flex items-center min-h-0">
+          <button onClick={() => scroll(-1)} aria-label="Anterior"
+            className="absolute -left-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-[var(--teal-mid)]/80 hover:bg-[var(--teal-mid)] flex items-center justify-center text-white shadow-xl">
+            <ChevronLeft size={18} />
           </button>
-          <button onClick={() => scroll(1)}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white border border-white/20">
-            <ChevronRight size={20} />
+          <button onClick={() => scroll(1)} aria-label="Próximo"
+            className="absolute -right-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-[var(--teal-mid)]/80 hover:bg-[var(--teal-mid)] flex items-center justify-center text-white shadow-xl">
+            <ChevronRight size={18} />
           </button>
           <div ref={ref}
-            className="flex gap-4 overflow-x-auto scrollbar-none px-12 py-4 snap-x w-full"
+            className="flex gap-4 overflow-x-auto scrollbar-none px-8 py-2 snap-x w-full h-full items-stretch"
             onWheel={(e) => { if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) { e.currentTarget.scrollLeft += e.deltaY; }}}>
             {PROVOS.map((p, i) => (
-              <div key={i} className="snap-start shrink-0 w-[260px] glass glass-hover p-5 flex flex-col gap-3 border-l-[3px]"
-                style={{ borderLeftColor: p.border, minHeight: "100%" }}>
-                <div className="text-[var(--amber)] font-bold leading-none" style={{ fontSize: p.big ? 64 : 48 }}>{p.n}</div>
-                <div className="text-white font-bold text-base leading-tight">{p.title}</div>
+              <div key={i} className="snap-start shrink-0 w-[240px] glass glass-hover p-4 flex flex-col gap-2 border-l-[3px]"
+                style={{ borderLeftColor: p.border }}>
+                <div className="text-[var(--amber)] font-bold leading-none" style={{ fontSize: p.big ? 52 : 42 }}>{p.n}</div>
+                <div className="text-white font-bold text-[15px] leading-tight">{p.title}</div>
                 <div className="text-white/75 text-xs leading-relaxed">{p.body}</div>
                 {p.highlight && (
                   <div className="text-[var(--amber)] text-xs font-medium italic border-l-2 border-[var(--amber)] pl-3">

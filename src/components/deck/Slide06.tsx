@@ -19,7 +19,7 @@ const CRITERIA = [
 export default function Slide06({ active }: { active: boolean }) {
   return (
     <SlideShell>
-      <div className="relative z-10 flex-1 px-10 md:px-16 py-10 flex flex-col gap-4 overflow-hidden">
+      <div className="relative z-10 flex-1 slide-pad flex flex-col gap-4 overflow-hidden">
         <FadeUp>
           <h2 className="text-white text-2xl md:text-[36px] font-semibold leading-tight">
             Onde a Ingecold está no digital.
@@ -29,11 +29,11 @@ export default function Slide06({ active }: { active: boolean }) {
           </p>
         </FadeUp>
 
-        <div className="grid grid-cols-[1fr_60px_60px] md:grid-cols-[200px_1fr_60px_1fr_60px] gap-x-3 gap-y-1.5 text-[10px] uppercase text-white/50 tracking-widest px-1 mt-2">
+        <div className="grid grid-cols-[180px_1fr_90px_1fr_90px] gap-x-3 gap-y-1.5 text-[10px] uppercase text-white/50 tracking-widest px-1 mt-2">
           <div>Critério</div>
-          <div className="hidden md:block">Ingecold</div>
+          <div></div>
           <div className="text-right">Ing.</div>
-          <div className="hidden md:block">Prática</div>
+          <div></div>
           <div className="text-right">Prát.</div>
         </div>
 
@@ -56,7 +56,7 @@ export default function Slide06({ active }: { active: boolean }) {
 
 function Row({ c, active, delay }: any) {
   return (
-    <div className="grid grid-cols-[200px_1fr_60px_1fr_60px] gap-3 items-center text-xs">
+    <div className="grid grid-cols-[180px_1fr_90px_1fr_90px] gap-3 items-center text-xs">
       <div className="text-white/90 truncate">{c.name}</div>
       <div className="h-2 bg-white/5 rounded-full overflow-hidden">
         <motion.div
@@ -67,7 +67,7 @@ function Row({ c, active, delay }: any) {
           transition={{ duration: 0.9, delay, ease: "easeOut" }}
         />
       </div>
-      <div className="text-[var(--coral)] font-mono text-[11px] text-right">{c.ing}</div>
+      <div className="text-[var(--coral)] font-mono text-[11px] text-right whitespace-nowrap">{c.ing}</div>
       <div className="h-2 bg-white/5 rounded-full overflow-hidden">
         <motion.div
           className="h-full rounded-full"
@@ -77,7 +77,7 @@ function Row({ c, active, delay }: any) {
           transition={{ duration: 0.9, delay: delay + 0.15, ease: "easeOut" }}
         />
       </div>
-      <div className="text-white/80 font-mono text-[11px] text-right">{c.prat}</div>
+      <div className="text-white/80 font-mono text-[11px] text-right whitespace-nowrap">{c.prat}</div>
     </div>
   );
 }

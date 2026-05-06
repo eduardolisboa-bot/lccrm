@@ -10,7 +10,7 @@ export default function Slide08() {
     <SlideShell>
       <div className="absolute inset-0 pointer-events-none"
         style={{ background: "radial-gradient(circle at center, transparent 40%, rgba(0,0,0,0.5))" }} />
-      <div className="relative z-10 flex-1 px-10 md:px-16 py-10 flex flex-col gap-5 overflow-hidden">
+      <div className="relative z-10 flex-1 slide-pad flex flex-col gap-5 overflow-hidden">
         <FadeUp>
           <h2 className="text-3xl md:text-[44px] font-semibold">
             <span className="text-[var(--amber)]">Diagnóstico</span> <span className="text-white">completo.</span>

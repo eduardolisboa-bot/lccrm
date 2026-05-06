@@ -16,13 +16,13 @@ export default function Slide04() {
     <SlideShell>
       <div className="absolute inset-0 pointer-events-none"
         style={{ background: "radial-gradient(circle at 50% 50%, rgba(13,158,135,0.08), transparent 60%)" }} />
-      <div className="relative z-10 flex-1 px-10 md:px-20 py-14 grid grid-cols-1 md:grid-cols-[30%_1fr] gap-10 items-start overflow-hidden">
+      <div className="relative z-10 flex-1 slide-pad grid grid-cols-1 lg:grid-cols-[28%_1fr] gap-8 items-start overflow-hidden">
         <FadeUp>
-          <h2 className="text-4xl md:text-[52px] font-bold leading-[1.05]">
+          <h2 className="font-bold leading-[1.05]" style={{ fontSize: "clamp(1.75rem, 3.2vw, 3rem)" }}>
             <span className="text-[var(--amber)] block">6 Concorrentes.</span>
             <span className="text-white block">1 Oportunidade.</span>
           </h2>
-          <p className="text-[var(--mint)] text-sm mt-6 max-w-xs">
+          <p className="text-[var(--mint)] text-sm mt-5 max-w-xs">
             Mapa estratégico do tabuleiro competitivo da refrigeração premium.
           </p>
         </FadeUp>

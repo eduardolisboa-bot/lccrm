@@ -31,7 +31,7 @@ const SHARE = [
 export default function Slide07() {
   return (
     <SlideShell>
-      <div className="relative z-10 flex-1 px-10 md:px-16 py-10 flex flex-col gap-4 overflow-hidden">
+      <div className="relative z-10 flex-1 slide-pad flex flex-col gap-4 overflow-hidden">
         <FadeUp>
           <h2 className="text-2xl md:text-[36px] font-semibold leading-tight">
             <span className="text-white">Em 14 das 15 palavras estratégicas,</span><br />
@@ -39,8 +39,8 @@ export default function Slide07() {
           </h2>
         </FadeUp>
 
-        <div className="grid grid-cols-1 md:grid-cols-[60%_40%] gap-6 flex-1 overflow-hidden">
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 overflow-hidden content-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-5 flex-1 overflow-hidden">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 overflow-hidden content-start">
             {KW.map((k, i) => (
               <FadeUp key={i}>
                 <KWCard {...k} />
