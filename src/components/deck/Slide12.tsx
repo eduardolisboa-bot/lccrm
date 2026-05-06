@@ -64,7 +64,7 @@ export default function Slide12() {
                 <YAxis hide />
                 <Tooltip cursor={{ fill: "rgba(255,255,255,0.05)" }} contentStyle={{ background: "#0B2735", border: "1px solid #0D9E87", borderRadius: 8, fontSize: 11 }} />
                 <Bar dataKey="rec" name="Receita add (k)" radius={[6, 6, 0, 0]} label={{ position: "top", fill: "#fff", fontSize: 10, formatter: (v: any) => `R$${v}K` }}>
-                  {SCEN.map((s, i) => <Cell key={i} fill={s.hl ? "var(--amber)" : "var(--teal-mid)"} stroke={s.hl ? "var(--amber)" : "none"} strokeWidth={s.hl ? 2 : 0} />)}
+                  {SCEN.map((s, i) => <Cell key={i} fill={s.scale ? "var(--coral)" : s.hl ? "var(--amber)" : "var(--teal-mid)"} stroke={s.hl || s.scale ? (s.scale ? "var(--coral)" : "var(--amber)") : "none"} strokeWidth={s.hl || s.scale ? 2 : 0} />)}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
