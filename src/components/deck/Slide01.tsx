@@ -46,7 +46,7 @@ export default function Slide01({ active }: { active: boolean }) {
           </FadeUp>
           <FadeUp>
             <p className="text-[var(--muted)] text-[13px] font-mono">
-              V4 Company + Ingecold · Encontro 3 · 2025
+              V4 Company + Ingecold · Encontro 3 · 2026
             </p>
           </FadeUp>
           <FadeUp>
@@ -76,7 +76,7 @@ export default function Slide01({ active }: { active: boolean }) {
             </div>
             <div className="mt-6 flex items-center gap-2 pt-5 border-t border-white/10">
               <Snowflake size={18} className="text-[var(--teal-mid)]" />
-              <span className="text-white text-sm font-mono tracking-widest">INGECOLD · 1979 → 2025</span>
+              <span className="text-white text-sm font-mono tracking-widest">INGECOLD · 1979 → 2026</span>
             </div>
           </motion.div>
         </FadeUp>

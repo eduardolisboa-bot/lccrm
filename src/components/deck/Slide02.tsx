@@ -40,7 +40,7 @@ export default function Slide02({ active }: { active: boolean }) {
           <div className="rounded-xl px-7 py-5 bg-[var(--coral)] text-white shadow-2xl">
             <p className="text-[15px] md:text-base font-medium leading-relaxed">
               <span className="font-bold">A Ingecold tem score digital de 1/12.</span>{" "}
-              Em 11 dos 12 critérios digitais relevantes, a empresa simplesmente não existe para o comprador de 2025.
+              Em 11 dos 12 critérios digitais relevantes, a empresa simplesmente não existe para o comprador de 2026.
             </p>
           </div>
         </FadeUp>

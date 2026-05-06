@@ -17,6 +17,7 @@ const SCEN = [
   { name: "R$10K", rec: 72, leads: 10, hl: true },
   { name: "R$15K", rec: 126, leads: 16 },
   { name: "R$20K", rec: 144, leads: 23 },
+  { name: "R$50K", rec: 360, leads: 58, scale: true },
 ];
 
 export default function Slide12() {
@@ -63,12 +64,15 @@ export default function Slide12() {
                 <YAxis hide />
                 <Tooltip cursor={{ fill: "rgba(255,255,255,0.05)" }} contentStyle={{ background: "#0B2735", border: "1px solid #0D9E87", borderRadius: 8, fontSize: 11 }} />
                 <Bar dataKey="rec" name="Receita add (k)" radius={[6, 6, 0, 0]} label={{ position: "top", fill: "#fff", fontSize: 10, formatter: (v: any) => `R$${v}K` }}>
-                  {SCEN.map((s, i) => <Cell key={i} fill={s.hl ? "var(--amber)" : "var(--teal-mid)"} stroke={s.hl ? "var(--amber)" : "none"} strokeWidth={s.hl ? 2 : 0} />)}
+                  {SCEN.map((s, i) => <Cell key={i} fill={s.scale ? "var(--coral)" : s.hl ? "var(--amber)" : "var(--teal-mid)"} stroke={s.hl || s.scale ? (s.scale ? "var(--coral)" : "var(--amber)") : "none"} strokeWidth={s.hl || s.scale ? 2 : 0} />)}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <div className="text-center text-[var(--amber)] text-[11px] font-bold mt-1">↑ R$10K · ENTRADA IDEAL · leads ~10/mês</div>
+          <div className="flex justify-center gap-6 text-[11px] font-bold mt-1">
+            <span className="text-[var(--amber)]">↑ R$10K · ENTRADA IDEAL · ~10 leads/mês</span>
+            <span className="text-[var(--coral)]">↑ R$50K · ESCALA AGRESSIVA · ~58 leads/mês · R$360K receita</span>
+          </div>
         </FadeUp>
 
         {/* CLOSING */}
