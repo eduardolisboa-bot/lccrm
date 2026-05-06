@@ -39,7 +39,7 @@ export default function Slide07() {
           </h2>
         </FadeUp>
 
-        <div className="grid grid-cols-1 md:grid-cols-[60%_40%] gap-6 flex-1 overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-5 flex-1 overflow-hidden">
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 overflow-hidden content-start">
             {KW.map((k, i) => (
               <FadeUp key={i}>
