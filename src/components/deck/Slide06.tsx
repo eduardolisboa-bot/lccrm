@@ -29,11 +29,11 @@ export default function Slide06({ active }: { active: boolean }) {
           </p>
         </FadeUp>
 
-        <div className="grid grid-cols-[1fr_60px_60px] md:grid-cols-[200px_1fr_60px_1fr_60px] gap-x-3 gap-y-1.5 text-[10px] uppercase text-white/50 tracking-widest px-1 mt-2">
+        <div className="grid grid-cols-[180px_1fr_90px_1fr_90px] gap-x-3 gap-y-1.5 text-[10px] uppercase text-white/50 tracking-widest px-1 mt-2">
           <div>Critério</div>
-          <div className="hidden md:block">Ingecold</div>
+          <div></div>
           <div className="text-right">Ing.</div>
-          <div className="hidden md:block">Prática</div>
+          <div></div>
           <div className="text-right">Prát.</div>
         </div>
 
