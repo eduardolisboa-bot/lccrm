@@ -22,7 +22,7 @@ export default function Slide11() {
   };
   return (
     <SlideShell>
-      <div className="relative z-10 flex-1 px-10 md:px-16 py-10 flex flex-col gap-5 overflow-hidden">
+      <div className="relative z-10 flex-1 slide-pad flex flex-col gap-5 overflow-hidden">
         <FadeUp>
           <h2 className="text-3xl md:text-[42px] font-semibold leading-tight">
             <span className="text-[var(--amber)]">10 verdades</span>{" "}

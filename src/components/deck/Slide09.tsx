@@ -38,7 +38,7 @@ const CARDS = [
 export default function Slide09() {
   return (
     <SlideShell>
-      <div className="relative z-10 flex-1 px-10 md:px-16 py-10 flex flex-col gap-5 overflow-hidden">
+      <div className="relative z-10 flex-1 slide-pad flex flex-col gap-5 overflow-hidden">
         <FadeUp>
           <h2 className="text-white text-2xl md:text-[40px] font-semibold leading-tight">
             Quatro movimentos para <span className="text-[var(--amber)]">dobrar o faturamento.</span>

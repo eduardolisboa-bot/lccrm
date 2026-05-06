@@ -16,7 +16,7 @@ export default function Slide02({ active }: { active: boolean }) {
     <SlideShell>
       <div className="absolute inset-0 opacity-40 pointer-events-none"
         style={{ backgroundImage: "repeating-linear-gradient(135deg, rgba(255,255,255,0.02) 0 2px, transparent 2px 24px)" }} />
-      <div className="relative z-10 flex-1 px-10 md:px-20 py-14 flex flex-col gap-6 overflow-hidden">
+      <div className="relative z-10 flex-1 slide-pad flex flex-col gap-6 overflow-hidden">
         <FadeUp>
           <div className="text-[var(--amber)] text-sm font-bold uppercase tracking-widest">
             Para empresas no início da jornada digital

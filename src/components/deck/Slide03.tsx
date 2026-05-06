@@ -22,7 +22,7 @@ const BUDGET = [
 export default function Slide03() {
   return (
     <SlideShell>
-      <div className="relative z-10 flex-1 px-10 md:px-20 py-14 flex flex-col gap-6 overflow-hidden">
+      <div className="relative z-10 flex-1 slide-pad flex flex-col gap-6 overflow-hidden">
         <FadeUp>
           <h2 className="text-2xl md:text-[40px] font-semibold leading-tight max-w-5xl">
             <span className="text-white">Google captura quem já quer comprar.</span>{" "}

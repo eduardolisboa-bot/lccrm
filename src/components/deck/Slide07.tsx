@@ -31,7 +31,7 @@ const SHARE = [
 export default function Slide07() {
   return (
     <SlideShell>
-      <div className="relative z-10 flex-1 px-10 md:px-16 py-10 flex flex-col gap-4 overflow-hidden">
+      <div className="relative z-10 flex-1 slide-pad flex flex-col gap-4 overflow-hidden">
         <FadeUp>
           <h2 className="text-2xl md:text-[36px] font-semibold leading-tight">
             <span className="text-white">Em 14 das 15 palavras estratégicas,</span><br />
