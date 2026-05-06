@@ -1,4 +1,4 @@
-import { SlideShell, FadeUp, Pill } from "./SlideShell";
+import { SlideShell, FadeUp } from "./SlideShell";
 
 const LEFT = [
   { name: "PRÁTICA", pill: "AMEAÇA ALTA", pillColor: "var(--coral)", line1: "R$600M/ano · 1.500 func.", line2: "Investe R$45K/mês digital", score: 11, body: "Produto equivalente. Marketing incomparável." },

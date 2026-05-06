@@ -31,15 +31,17 @@ export const fadeUp = {
 export function FadeUp({
   children,
   className = "",
+  style,
   as: Tag = "div",
 }: {
   children: ReactNode;
   className?: string;
+  style?: React.CSSProperties;
   as?: any;
 }) {
   const M = motion[Tag as keyof typeof motion] as any;
   return (
-    <M variants={fadeUp} className={className}>
+    <M variants={fadeUp} className={className} style={style}>
       {children}
     </M>
   );
