@@ -17,6 +17,7 @@ const SCEN = [
   { name: "R$10K", rec: 72, leads: 10, hl: true },
   { name: "R$15K", rec: 126, leads: 16 },
   { name: "R$20K", rec: 144, leads: 23 },
+  { name: "R$50K", rec: 360, leads: 58, scale: true },
 ];
 
 export default function Slide12() {
