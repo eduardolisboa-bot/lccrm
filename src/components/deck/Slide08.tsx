@@ -2,7 +2,7 @@ import { SlideShell, FadeUp } from "./SlideShell";
 
 const F = ["Ultra-congelador exclusivo no segmento","50 anos de reputação e rede","Inox premium — qualidade objetivamente superior","Câmara de fermentação: nicho de alta margem","Fábrica 7.000m² com capacidade ociosa","Balcão sushi: produto sem concorrente direto","Gestão familiar: decisão ágil","Customização total como diferencial"];
 const W = ["Score digital 1/12","Zero geração ativa de leads","Família presa na operação","Sem CRM — 60% das propostas perdidas","Sem representantes regionais ativos","Parcelamento só desde ago/2024","Instagram parado 2 anos","Sem linha entry-level no portfólio"];
-const O = ["+26.854 padarias abertas em 2024","COP-30 Belém nov/2025","Gelaterias premium em boom","Mini-freezer gourmet: produto inexistente","Google Ads: 14 KWs sem disputa","América Latina 6,7% a.a.","MEPS valoriza produto técnico","Parceiro italiano disponível"];
+const O = ["+26.854 padarias abertas em 2024","COP-30 Belém nov/2026","Gelaterias premium em boom","Mini-freezer gourmet: produto inexistente","Google Ads: 14 KWs sem disputa","América Latina 6,7% a.a.","MEPS valoriza produto técnico","Parceiro italiano disponível"];
 const T = ["Produto chinês 40-60% mais barato","Prática expandindo p/ ultra-congelador","Cozinha industrial entrando em vitrines","Arquiteto sem programa de parceria","Inflation de insumos (inox, cobre)","Mercado pesquisa online: invisível = irrelevante","Clientes exigindo parcelamento agressivo","Janela competitiva fechando em 12-18 meses"];
 
 export default function Slide08() {

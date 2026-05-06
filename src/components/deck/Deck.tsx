@@ -157,7 +157,7 @@ export default function Deck() {
 
       {/* Bottom-right */}
       <div className="fixed bottom-6 right-6 z-[60] text-white/40 text-[10px] uppercase tracking-widest font-mono pointer-events-none">
-        V4 Company · 2025
+        V4 Company · 2026
       </div>
     </div>
   );
