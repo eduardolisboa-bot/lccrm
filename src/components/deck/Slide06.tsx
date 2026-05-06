@@ -56,7 +56,7 @@ export default function Slide06({ active }: { active: boolean }) {
 
 function Row({ c, active, delay }: any) {
   return (
-    <div className="grid grid-cols-[200px_1fr_60px_1fr_60px] gap-3 items-center text-xs">
+    <div className="grid grid-cols-[180px_1fr_90px_1fr_90px] gap-3 items-center text-xs">
       <div className="text-white/90 truncate">{c.name}</div>
       <div className="h-2 bg-white/5 rounded-full overflow-hidden">
         <motion.div
@@ -67,7 +67,7 @@ function Row({ c, active, delay }: any) {
           transition={{ duration: 0.9, delay, ease: "easeOut" }}
         />
       </div>
-      <div className="text-[var(--coral)] font-mono text-[11px] text-right">{c.ing}</div>
+      <div className="text-[var(--coral)] font-mono text-[11px] text-right whitespace-nowrap">{c.ing}</div>
       <div className="h-2 bg-white/5 rounded-full overflow-hidden">
         <motion.div
           className="h-full rounded-full"
@@ -77,7 +77,7 @@ function Row({ c, active, delay }: any) {
           transition={{ duration: 0.9, delay: delay + 0.15, ease: "easeOut" }}
         />
       </div>
-      <div className="text-white/80 font-mono text-[11px] text-right">{c.prat}</div>
+      <div className="text-white/80 font-mono text-[11px] text-right whitespace-nowrap">{c.prat}</div>
     </div>
   );
 }
