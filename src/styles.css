@@ -99,3 +99,17 @@
 
 .scrollbar-none::-webkit-scrollbar { display: none; }
 .scrollbar-none { scrollbar-width: none; }
+
+/* Safe horizontal padding so content never collides with floating side arrows (~56px each) */
+.slide-pad {
+  padding-left: clamp(1.5rem, 5vw, 5rem);
+  padding-right: clamp(4.5rem, 7vw, 6rem);
+  padding-top: clamp(3.5rem, 6vh, 4.5rem);
+  padding-bottom: clamp(3.5rem, 6vh, 4.5rem);
+}
+@media (min-width: 768px) {
+  .slide-pad {
+    padding-left: clamp(5rem, 7vw, 7rem);
+    padding-right: clamp(5rem, 7vw, 7rem);
+  }
+}
