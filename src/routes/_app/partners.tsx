@@ -39,13 +39,22 @@ function Partners() {
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
-    return partners.filter((p: any) => {
+    const out = partners.filter((p: any) => {
       if (tipo !== "all" && p.tipo !== tipo) return false;
       if (status !== "all" && p.status !== status) return false;
       if (!term) return true;
       return [p.nome, p.email, p.telefone, p.empresa].some((v: any) => v?.toLowerCase().includes(term));
     });
-  }, [partners, q, tipo, status]);
+    const [key, dirStr] = sort.split("-");
+    const dir = dirStr === "asc" ? 1 : -1;
+    return [...out].sort((a: any, b: any) => {
+      const av = a[key], bv = b[key];
+      if (av == null && bv == null) return 0;
+      if (av == null) return 1;
+      if (bv == null) return -1;
+      return String(av).localeCompare(String(bv), "pt-BR") * dir;
+    });
+  }, [partners, q, tipo, status, sort]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
