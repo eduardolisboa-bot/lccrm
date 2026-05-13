@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { KanbanBoard } from "@/components/crm/KanbanBoard";
+import { FunnelSwitcher } from "@/components/crm/FunnelSwitcher";
+import { useFunnel } from "@/lib/funnel-context";
 import { OpportunityDrawer } from "@/components/crm/OpportunityDrawer";
 import { EditPartnerActions } from "@/components/crm/EditPartnerDialog";
 import { fmtBRL, fmtNum } from "@/lib/format";
@@ -78,13 +80,21 @@ function PartnerDetail() {
       </div>
 
       <div>
-        <h3 className="font-serif text-lg mb-3">Pipeline do parceiro</h3>
-        <KanbanBoard filters={{ parceiroId: id }} onCardClick={setOppId} />
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-serif text-lg">Pipeline do parceiro</h3>
+          <FunnelSwitcher />
+        </div>
+        <PartnerKanbanWrapper partnerId={id} onCardClick={setOppId} />
       </div>
 
       <OpportunityDrawer oppId={oppId} open={!!oppId} onClose={() => setOppId(null)} />
     </div>
   );
+}
+
+function PartnerKanbanWrapper({ partnerId, onCardClick }: { partnerId: string; onCardClick: (id: string) => void }) {
+  const { selectedId } = useFunnel();
+  return <KanbanBoard funnelId={selectedId} filters={{ parceiroId: partnerId }} onCardClick={onCardClick} />;
 }
 
 function Kpi({ label, value, accent }: { label: string; value: string; accent?: string }) {

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DndContext, useDroppable, type DragEndEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,24 +25,38 @@ function Column({ stage, opps, onCardClick }: { stage: any; opps: any[]; onCardC
   );
 }
 
-export function KanbanBoard({ filters, onCardClick }: { filters?: { parceiroId?: string; origem?: "direto" | "parceiro" }; onCardClick: (id: string) => void }) {
+export function KanbanBoard({
+  funnelId,
+  filters,
+  onCardClick,
+}: {
+  funnelId: string | null;
+  filters?: { parceiroId?: string; origem?: "direto" | "parceiro" };
+  onCardClick: (id: string) => void;
+}) {
   const qc = useQueryClient();
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
   const { data: stages = [] } = useQuery({
-    queryKey: ["stages-active-kanban"],
-    queryFn: async () => (await supabase.from("pipeline_stages").select("*").eq("ativa", true).order("ordem")).data ?? [],
+    queryKey: ["stages-active-kanban", funnelId],
+    queryFn: async () => {
+      if (!funnelId) return [];
+      return (await supabase.from("pipeline_stages").select("*").eq("ativa", true).eq("funnel_id", funnelId).order("ordem")).data ?? [];
+    },
+    enabled: !!funnelId,
   });
 
   const { data: opps = [] } = useQuery({
-    queryKey: ["opps", filters],
+    queryKey: ["opps", funnelId, filters],
     queryFn: async () => {
-      let q = supabase.from("opportunities").select("*, clients(nome), partners(nome)");
+      if (!funnelId) return [];
+      let q = supabase.from("opportunities").select("*, clients(nome), partners(nome)").eq("funnel_id", funnelId);
       if (filters?.parceiroId) q = q.eq("parceiro_id", filters.parceiroId);
       if (filters?.origem) q = q.eq("origem", filters.origem);
       const { data } = await q;
       return data ?? [];
     },
+    enabled: !!funnelId,
   });
 
   const move = useMutation({
@@ -71,6 +85,13 @@ export function KanbanBoard({ filters, onCardClick }: { filters?: { parceiroId?:
     const opp = opps.find((o: any) => o.id === oppId);
     if (opp && opp.etapa_id !== newStage) move.mutate({ id: oppId, etapa_id: newStage });
   };
+
+  if (!funnelId) {
+    return <div className="p-12 text-center text-sm text-muted-foreground">Selecione um funil para ver o Kanban.</div>;
+  }
+  if (!stages.length) {
+    return <div className="p-12 text-center text-sm text-muted-foreground">Este funil ainda não tem etapas. Configure em Configurações.</div>;
+  }
 
   return (
     <DndContext sensors={sensors} onDragEnd={onDragEnd}>
