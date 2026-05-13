@@ -79,7 +79,7 @@ function PartnerDetail() {
 
       <div>
         <h3 className="font-serif text-lg mb-3">Pipeline do parceiro</h3>
-        <KanbanBoard filters={{ parceiroId: id }} onCardClick={setOppId} />
+        <PartnerKanban partnerId={id} onCardClick={setOppId} />
       </div>
 
       <OpportunityDrawer oppId={oppId} open={!!oppId} onClose={() => setOppId(null)} />
