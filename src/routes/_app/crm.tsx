@@ -62,6 +62,7 @@ function NewOpportunityButton() {
   const [produto, setProduto] = useState("");
   const [origem, setOrigem] = useState<"direto" | "parceiro">("direto");
   const [parceiroId, setParceiroId] = useState("");
+  const [temperatura, setTemperatura] = useState<"frio" | "morno" | "quente">("morno");
 
   const { data: clients = [] } = useQuery({
     queryKey: ["clients-select"],
@@ -90,6 +91,7 @@ function NewOpportunityButton() {
         produto_interesse: produto,
         etapa_id: firstStage,
         origem,
+        temperatura,
       });
       if (error) throw error;
     },
@@ -125,15 +127,28 @@ function NewOpportunityButton() {
             <div><Label>Valor (R$)</Label><Input type="number" value={valor} onChange={(e) => setValor(e.target.value)} /></div>
             <div><Label>Produto</Label><Input value={produto} onChange={(e) => setProduto(e.target.value)} /></div>
           </div>
-          <div>
-            <Label>Origem</Label>
-            <Select value={origem} onValueChange={(v: any) => setOrigem(v)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="direto">Direto</SelectItem>
-                <SelectItem value="parceiro">Via Parceiro</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label>Origem</Label>
+              <Select value={origem} onValueChange={(v: any) => setOrigem(v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="direto">Direto</SelectItem>
+                  <SelectItem value="parceiro">Via Parceiro</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Temperatura</Label>
+              <Select value={temperatura} onValueChange={(v: any) => setTemperatura(v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="frio">Frio</SelectItem>
+                  <SelectItem value="morno">Morno</SelectItem>
+                  <SelectItem value="quente">Quente</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           {origem === "parceiro" && (
             <div>
