@@ -26,7 +26,15 @@ function Clients() {
   const [tipo, setTipo] = useState<string>("all");
   const [parceiro, setParceiro] = useState<string>("all");
   const [page, setPage] = useState(1);
+  const [sortKey, setSortKey] = useState<"nome" | "tipo_cliente" | "patrimonio_estimado">("nome");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const PAGE_SIZE = 20;
+
+  const toggleSort = (k: typeof sortKey) => {
+    if (sortKey === k) setSortDir(sortDir === "asc" ? "desc" : "asc");
+    else { setSortKey(k); setSortDir("asc"); }
+    setPage(1);
+  };
 
   const partnerOptions = useMemo(() => {
     const map = new Map<string, string>();
