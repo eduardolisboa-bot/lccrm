@@ -22,14 +22,64 @@ function Clients() {
     queryFn: async () => (await supabase.from("clients").select("*, partners(nome)")).data ?? [],
   });
 
+  const [q, setQ] = useState("");
+  const [tipo, setTipo] = useState<string>("all");
+  const [parceiro, setParceiro] = useState<string>("all");
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 20;
+
+  const partnerOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    clients.forEach((c: any) => { if (c.parceiro_id && c.partners?.nome) map.set(c.parceiro_id, c.partners.nome); });
+    return Array.from(map.entries());
+  }, [clients]);
+
+  const filtered = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    return clients.filter((c: any) => {
+      if (tipo !== "all" && c.tipo_cliente !== tipo) return false;
+      if (parceiro !== "all" && c.parceiro_id !== parceiro) return false;
+      if (!term) return true;
+      return [c.nome, c.email, c.telefone, c.cpf_cnpj].some((v: any) => v?.toLowerCase().includes(term));
+    });
+  }, [clients, q, tipo, parceiro]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pageRows = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  const resetPage = <T,>(setter: (v: T) => void) => (v: T) => { setter(v); setPage(1); };
+
   return (
     <div className="p-8 space-y-6">
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-3xl font-serif">Clientes</h1>
-          <p className="text-sm text-muted-foreground mt-1">{clients.length} clientes</p>
+          <p className="text-sm text-muted-foreground mt-1">{filtered.length} de {clients.length} clientes</p>
         </div>
         <NewClient />
+      </div>
+
+      <div className="flex flex-wrap gap-2 items-center">
+        <div className="relative flex-1 min-w-[220px]">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Input className="pl-9" placeholder="Buscar por nome, email, telefone, CPF/CNPJ…" value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} />
+        </div>
+        <Select value={tipo} onValueChange={resetPage(setTipo)}>
+          <SelectTrigger className="w-[160px]"><SelectValue placeholder="Tipo" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os tipos</SelectItem>
+            <SelectItem value="direto">Direto</SelectItem>
+            <SelectItem value="parceiro">Via Parceiro</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={parceiro} onValueChange={resetPage(setParceiro)}>
+          <SelectTrigger className="w-[200px]"><SelectValue placeholder="Parceiro" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os parceiros</SelectItem>
+            {partnerOptions.map(([id, nome]) => <SelectItem key={id} value={id}>{nome}</SelectItem>)}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="bg-card border rounded-xl overflow-hidden">
@@ -44,7 +94,7 @@ function Clients() {
             </tr>
           </thead>
           <tbody>
-            {clients.map((c: any) => (
+            {pageRows.map((c: any) => (
               <tr key={c.id} className="border-b border-border last:border-0 hover:bg-muted/30">
                 <td className="px-5 py-3"><Link to="/clients/$id" params={{ id: c.id }} className="hover:text-primary">{c.nome}</Link></td>
                 <td className="px-5 py-3">
@@ -57,10 +107,20 @@ function Clients() {
                 <td className="px-5 py-3 text-muted-foreground">{c.email ?? "—"}</td>
               </tr>
             ))}
-            {clients.length === 0 && <tr><td colSpan={5} className="text-center text-muted-foreground py-8">Nenhum cliente.</td></tr>}
+            {filtered.length === 0 && <tr><td colSpan={5} className="text-center text-muted-foreground py-8">Nenhum cliente encontrado.</td></tr>}
           </tbody>
         </table>
       </div>
+
+      {filtered.length > PAGE_SIZE && (
+        <div className="flex items-center justify-between text-sm">
+          <div className="text-muted-foreground">Página {currentPage} de {totalPages}</div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1}><ChevronLeft className="w-4 h-4" /></Button>
+            <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}><ChevronRight className="w-4 h-4" /></Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
