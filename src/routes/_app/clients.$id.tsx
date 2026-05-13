@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft } from "lucide-react";
 import { fmtBRL } from "@/lib/format";
 import { OpportunityDrawer } from "@/components/crm/OpportunityDrawer";
+import { EditClientActions } from "@/components/crm/EditClientDialog";
+import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/_app/clients/$id")({
   component: ClientDetail,
@@ -12,6 +14,8 @@ export const Route = createFileRoute("/_app/clients/$id")({
 
 function ClientDetail() {
   const { id } = Route.useParams();
+  const { profile } = useAuth();
+  const canEdit = profile?.tipo_usuario === "master" || profile?.tipo_usuario === "interno";
   const [oppId, setOppId] = useState<string | null>(null);
 
   const { data: client } = useQuery({
@@ -31,13 +35,16 @@ function ClientDetail() {
     <div className="p-8 space-y-6">
       <Link to="/clients" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="w-4 h-4 mr-1" /> Voltar</Link>
 
-      <div>
-        <h1 className="text-3xl font-serif">{client?.nome ?? "—"}</h1>
-        <div className="text-sm text-muted-foreground mt-1 flex flex-wrap gap-2">
-          <span className="capitalize">{client?.tipo_cliente}</span>
-          {client?.partners?.nome && (<><span>·</span><span>via {client.partners.nome}</span></>)}
-          {client?.email && (<><span>·</span><span>{client.email}</span></>)}
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-serif">{client?.nome ?? "—"}</h1>
+          <div className="text-sm text-muted-foreground mt-1 flex flex-wrap gap-2">
+            <span className="capitalize">{client?.tipo_cliente}</span>
+            {client?.partners?.nome && (<><span>·</span><span>via {client.partners.nome}</span></>)}
+            {client?.email && (<><span>·</span><span>{client.email}</span></>)}
+          </div>
         </div>
+        {canEdit && <EditClientActions client={client} />}
       </div>
 
       <div className="grid md:grid-cols-3 gap-4">
