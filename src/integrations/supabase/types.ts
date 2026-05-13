@@ -123,12 +123,78 @@ export type Database = {
           },
         ]
       }
+      funnel_goals: {
+        Row: {
+          created_at: string
+          funnel_id: string
+          id: string
+          mes: string
+          updated_at: string
+          valor_meta: number
+        }
+        Insert: {
+          created_at?: string
+          funnel_id: string
+          id?: string
+          mes: string
+          updated_at?: string
+          valor_meta?: number
+        }
+        Update: {
+          created_at?: string
+          funnel_id?: string
+          id?: string
+          mes?: string
+          updated_at?: string
+          valor_meta?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "funnel_goals_funnel_id_fkey"
+            columns: ["funnel_id"]
+            isOneToOne: false
+            referencedRelation: "funnels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      funnels: {
+        Row: {
+          ativo: boolean
+          cor: string
+          created_at: string
+          descricao: string | null
+          id: string
+          nome: string
+          ordem: number
+        }
+        Insert: {
+          ativo?: boolean
+          cor?: string
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome: string
+          ordem?: number
+        }
+        Update: {
+          ativo?: boolean
+          cor?: string
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome?: string
+          ordem?: number
+        }
+        Relationships: []
+      }
       opportunities: {
         Row: {
           cliente_id: string | null
           created_at: string
           data_proxima_acao: string | null
           etapa_id: string | null
+          funnel_id: string
           id: string
           observacoes: string | null
           origem: Database["public"]["Enums"]["opp_origem"]
@@ -147,6 +213,7 @@ export type Database = {
           created_at?: string
           data_proxima_acao?: string | null
           etapa_id?: string | null
+          funnel_id: string
           id?: string
           observacoes?: string | null
           origem?: Database["public"]["Enums"]["opp_origem"]
@@ -165,6 +232,7 @@ export type Database = {
           created_at?: string
           data_proxima_acao?: string | null
           etapa_id?: string | null
+          funnel_id?: string
           id?: string
           observacoes?: string | null
           origem?: Database["public"]["Enums"]["opp_origem"]
@@ -191,6 +259,13 @@ export type Database = {
             columns: ["etapa_id"]
             isOneToOne: false
             referencedRelation: "pipeline_stages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "opportunities_funnel_id_fkey"
+            columns: ["funnel_id"]
+            isOneToOne: false
+            referencedRelation: "funnels"
             referencedColumns: ["id"]
           },
           {
@@ -261,6 +336,7 @@ export type Database = {
           ativa: boolean
           cor: string
           created_at: string
+          funnel_id: string
           id: string
           nome: string
           ordem: number
@@ -270,6 +346,7 @@ export type Database = {
           ativa?: boolean
           cor?: string
           created_at?: string
+          funnel_id: string
           id?: string
           nome: string
           ordem: number
@@ -279,12 +356,92 @@ export type Database = {
           ativa?: boolean
           cor?: string
           created_at?: string
+          funnel_id?: string
           id?: string
           nome?: string
           ordem?: number
           tipo?: Database["public"]["Enums"]["stage_tipo"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "pipeline_stages_funnel_id_fkey"
+            columns: ["funnel_id"]
+            isOneToOne: false
+            referencedRelation: "funnels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stage_goals: {
+        Row: {
+          created_at: string
+          id: string
+          mes: string
+          stage_id: string
+          updated_at: string
+          valor_meta: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mes: string
+          stage_id: string
+          updated_at?: string
+          valor_meta?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mes?: string
+          stage_id?: string
+          updated_at?: string
+          valor_meta?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stage_goals_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_funnel_access: {
+        Row: {
+          created_at: string
+          funnel_id: string
+          id: string
+          user_profile_id: string
+        }
+        Insert: {
+          created_at?: string
+          funnel_id: string
+          id?: string
+          user_profile_id: string
+        }
+        Update: {
+          created_at?: string
+          funnel_id?: string
+          id?: string
+          user_profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_funnel_access_funnel_id_fkey"
+            columns: ["funnel_id"]
+            isOneToOne: false
+            referencedRelation: "funnels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_funnel_access_user_profile_id_fkey"
+            columns: ["user_profile_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_profiles: {
         Row: {
@@ -337,6 +494,10 @@ export type Database = {
       get_user_tipo: {
         Args: { _auth_user: string }
         Returns: Database["public"]["Enums"]["user_tipo"]
+      }
+      user_can_access_funnel: {
+        Args: { _auth_user: string; _funnel_id: string }
+        Returns: boolean
       }
     }
     Enums: {
