@@ -44,13 +44,22 @@ function Clients() {
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
-    return clients.filter((c: any) => {
+    const out = clients.filter((c: any) => {
       if (tipo !== "all" && c.tipo_cliente !== tipo) return false;
       if (parceiro !== "all" && c.parceiro_id !== parceiro) return false;
       if (!term) return true;
       return [c.nome, c.email, c.telefone, c.cpf_cnpj].some((v: any) => v?.toLowerCase().includes(term));
     });
-  }, [clients, q, tipo, parceiro]);
+    const dir = sortDir === "asc" ? 1 : -1;
+    return [...out].sort((a: any, b: any) => {
+      const av = a[sortKey], bv = b[sortKey];
+      if (av == null && bv == null) return 0;
+      if (av == null) return 1;
+      if (bv == null) return -1;
+      if (typeof av === "number" && typeof bv === "number") return (av - bv) * dir;
+      return String(av).localeCompare(String(bv), "pt-BR") * dir;
+    });
+  }, [clients, q, tipo, parceiro, sortKey, sortDir]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
