@@ -34,6 +34,7 @@ function Partners() {
   const [tipo, setTipo] = useState<string>("all");
   const [status, setStatus] = useState<string>("all");
   const [page, setPage] = useState(1);
+  const [sort, setSort] = useState<string>("nome-asc");
   const PAGE_SIZE = 12;
 
   const filtered = useMemo(() => {
