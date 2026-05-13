@@ -103,10 +103,10 @@ function Clients() {
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-xs uppercase tracking-wider text-muted-foreground border-b border-border">
-              <th className="px-5 py-3">Nome</th>
-              <th className="px-5 py-3">Tipo</th>
+              <SortableTh label="Nome" k="nome" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} />
+              <SortableTh label="Tipo" k="tipo_cliente" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} />
               <th className="px-5 py-3">Parceiro</th>
-              <th className="px-5 py-3">Patrimônio</th>
+              <SortableTh label="Patrimônio" k="patrimonio_estimado" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} />
               <th className="px-5 py-3">Email</th>
             </tr>
           </thead>
