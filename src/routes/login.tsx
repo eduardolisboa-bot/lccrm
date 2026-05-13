@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import logo from "@/assets/lisboa-capital-logo.png";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -16,26 +17,34 @@ function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [signupMode, setSignupMode] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [hasUsers, setHasUsers] = useState<boolean | null>(null);
+
+  // Permitir 1ª conta (Master). Depois disso, o signup público fica bloqueado.
+  useEffect(() => {
+    supabase.from("user_profiles").select("id", { count: "exact", head: true })
+      .then(({ count }) => setHasUsers((count ?? 0) > 0));
+  }, []);
 
   useEffect(() => {
     if (!loading && user) navigate({ to: "/dashboard" });
   }, [user, loading, navigate]);
 
+  const allowFirstSignup = hasUsers === false;
+  const [signupMode, setSignupMode] = useState(false);
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     try {
-      if (signupMode) {
-        const { supabase } = await import("@/integrations/supabase/client");
+      if (signupMode && allowFirstSignup) {
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: { emailRedirectTo: `${window.location.origin}/dashboard` },
         });
         if (error) toast.error(error.message);
-        else toast.success("Conta criada. Você já pode entrar.");
+        else toast.success("Conta Master criada. Você já pode entrar.");
         setSignupMode(false);
       } else {
         const { error } = await signIn(email, password);
@@ -58,7 +67,7 @@ function LoginPage() {
         </div>
         <div className="bg-card/80 backdrop-blur-xl border rounded-xl p-8 shadow-2xl">
           <h1 className="text-2xl font-serif text-center mb-6">
-            {signupMode ? "Criar conta" : "Acesso restrito"}
+            {signupMode ? "Cadastro do Master" : "Acesso restrito"}
           </h1>
           <form onSubmit={onSubmit} className="space-y-4">
             <div>
@@ -70,21 +79,25 @@ function LoginPage() {
               <Input id="password" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1" />
             </div>
             <Button type="submit" disabled={submitting} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-medium">
-              {submitting ? "Aguarde…" : signupMode ? "Criar conta" : "Entrar"}
+              {submitting ? "Aguarde…" : signupMode ? "Criar Master" : "Entrar"}
             </Button>
           </form>
-          <div className="mt-4 text-center">
-            <button
-              type="button"
-              onClick={() => setSignupMode((s) => !s)}
-              className="text-xs text-muted-foreground hover:text-primary"
-            >
-              {signupMode ? "Já tem conta? Entrar" : "Primeiro acesso? Criar conta"}
-            </button>
-          </div>
+          {allowFirstSignup && (
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={() => setSignupMode((s) => !s)}
+                className="text-xs text-muted-foreground hover:text-primary"
+              >
+                {signupMode ? "Já tem conta? Entrar" : "Primeiro acesso? Criar conta Master"}
+              </button>
+            </div>
+          )}
         </div>
         <p className="text-center text-xs text-muted-foreground mt-6">
-          O primeiro usuário cadastrado se torna Master automaticamente.
+          {allowFirstSignup
+            ? "O primeiro usuário cadastrado se torna Master automaticamente."
+            : "Apenas o Master pode cadastrar novos usuários no sistema."}
         </p>
       </div>
     </div>
