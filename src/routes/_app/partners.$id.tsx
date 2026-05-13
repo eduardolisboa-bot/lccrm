@@ -92,6 +92,11 @@ function PartnerDetail() {
   );
 }
 
+function PartnerKanbanWrapper({ partnerId, onCardClick }: { partnerId: string; onCardClick: (id: string) => void }) {
+  const { selectedId } = useFunnel();
+  return <KanbanBoard funnelId={selectedId} filters={{ parceiroId: partnerId }} onCardClick={onCardClick} />;
+}
+
 function Kpi({ label, value, accent }: { label: string; value: string; accent?: string }) {
   return (
     <div className="bg-card border rounded-xl p-4">
