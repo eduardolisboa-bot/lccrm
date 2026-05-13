@@ -4,8 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { KanbanBoard } from "@/components/crm/KanbanBoard";
 import { OpportunityDrawer } from "@/components/crm/OpportunityDrawer";
+import { EditPartnerActions } from "@/components/crm/EditPartnerDialog";
 import { fmtBRL, fmtNum } from "@/lib/format";
 import { ArrowLeft } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/_app/partners/$id")({
   component: PartnerDetail,
@@ -13,6 +15,8 @@ export const Route = createFileRoute("/_app/partners/$id")({
 
 function PartnerDetail() {
   const { id } = Route.useParams();
+  const { profile } = useAuth();
+  const isMaster = profile?.tipo_usuario === "master";
   const [oppId, setOppId] = useState<string | null>(null);
 
   const { data: partner } = useQuery({
@@ -47,7 +51,10 @@ function PartnerDetail() {
             <span>Comissão: {partner?.comissao ?? 0}%</span>
           </div>
         </div>
-        <span className={`text-xs uppercase tracking-wider px-3 py-1 rounded ${partner?.status === "ativo" ? "bg-success/15 text-success" : "bg-muted text-muted-foreground"}`}>{partner?.status}</span>
+        <div className="flex items-center gap-3">
+          <span className={`text-xs uppercase tracking-wider px-3 py-1 rounded ${partner?.status === "ativo" ? "bg-success/15 text-success" : "bg-muted text-muted-foreground"}`}>{partner?.status}</span>
+          {isMaster && <EditPartnerActions partner={partner} />}
+        </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
