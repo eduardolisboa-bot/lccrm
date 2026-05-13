@@ -2,8 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useFunnel } from "@/lib/funnel-context";
 import { KanbanBoard } from "@/components/crm/KanbanBoard";
 import { OpportunityDrawer } from "@/components/crm/OpportunityDrawer";
+import { FunnelSwitcher } from "@/components/crm/FunnelSwitcher";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -18,6 +20,7 @@ export const Route = createFileRoute("/_app/crm")({
 });
 
 function CrmPage() {
+  const { selectedId } = useFunnel();
   const [oppId, setOppId] = useState<string | null>(null);
   const [tab, setTab] = useState("todos");
 
@@ -26,9 +29,12 @@ function CrmPage() {
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-3xl font-serif">CRM Kanban</h1>
-          <p className="text-sm text-muted-foreground mt-1">Pipeline completo de oportunidades</p>
+          <p className="text-sm text-muted-foreground mt-1">Pipeline do funil selecionado</p>
         </div>
-        <NewOpportunityButton />
+        <div className="flex items-center gap-3">
+          <FunnelSwitcher />
+          <NewOpportunityButton funnelId={selectedId} />
+        </div>
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>
@@ -38,13 +44,13 @@ function CrmPage() {
           <TabsTrigger value="parceiros">Por Parceiro</TabsTrigger>
         </TabsList>
         <TabsContent value="todos" className="mt-4">
-          <KanbanBoard onCardClick={setOppId} />
+          <KanbanBoard funnelId={selectedId} onCardClick={setOppId} />
         </TabsContent>
         <TabsContent value="diretos" className="mt-4">
-          <KanbanBoard filters={{ origem: "direto" }} onCardClick={setOppId} />
+          <KanbanBoard funnelId={selectedId} filters={{ origem: "direto" }} onCardClick={setOppId} />
         </TabsContent>
         <TabsContent value="parceiros" className="mt-4">
-          <KanbanBoard filters={{ origem: "parceiro" }} onCardClick={setOppId} />
+          <KanbanBoard funnelId={selectedId} filters={{ origem: "parceiro" }} onCardClick={setOppId} />
         </TabsContent>
       </Tabs>
 
@@ -53,7 +59,7 @@ function CrmPage() {
   );
 }
 
-function NewOpportunityButton() {
+function NewOpportunityButton({ funnelId }: { funnelId: string | null }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [titulo, setTitulo] = useState("");
@@ -75,16 +81,22 @@ function NewOpportunityButton() {
     enabled: open,
   });
   const { data: stages = [] } = useQuery({
-    queryKey: ["stages-first"],
-    queryFn: async () => (await supabase.from("pipeline_stages").select("id").eq("ativa", true).order("ordem").limit(1)).data ?? [],
-    enabled: open,
+    queryKey: ["stages-first", funnelId],
+    queryFn: async () => {
+      if (!funnelId) return [];
+      return (await supabase.from("pipeline_stages").select("id").eq("ativa", true).eq("funnel_id", funnelId).order("ordem").limit(1)).data ?? [];
+    },
+    enabled: open && !!funnelId,
   });
 
   const create = useMutation({
     mutationFn: async () => {
+      if (!funnelId) throw new Error("Selecione um funil");
       const firstStage = stages[0]?.id;
+      if (!firstStage) throw new Error("Funil sem etapas");
       const { error } = await supabase.from("opportunities").insert({
         titulo,
+        funnel_id: funnelId,
         cliente_id: clienteId || null,
         parceiro_id: origem === "parceiro" ? parceiroId || null : null,
         valor_estimado: Number(valor) || 0,
@@ -108,7 +120,7 @@ function NewOpportunityButton() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-primary text-primary-foreground hover:bg-primary/90"><Plus className="w-4 h-4 mr-1" /> Nova Oportunidade</Button>
+        <Button disabled={!funnelId} className="bg-primary text-primary-foreground hover:bg-primary/90"><Plus className="w-4 h-4 mr-1" /> Nova Oportunidade</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader><DialogTitle className="font-serif">Nova Oportunidade</DialogTitle></DialogHeader>
@@ -161,7 +173,7 @@ function NewOpportunityButton() {
               </Select>
             </div>
           )}
-          <Button onClick={() => create.mutate()} disabled={!titulo} className="w-full">Criar</Button>
+          <Button onClick={() => create.mutate()} disabled={!titulo || !funnelId} className="w-full">Criar</Button>
         </div>
       </DialogContent>
     </Dialog>
