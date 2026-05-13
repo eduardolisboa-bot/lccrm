@@ -90,6 +90,17 @@ function Partners() {
             <SelectItem value="inativo">Inativo</SelectItem>
           </SelectContent>
         </Select>
+        <Select value={sort} onValueChange={(v) => { setSort(v); setPage(1); }}>
+          <SelectTrigger className="w-[180px]"><SelectValue placeholder="Ordenar" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="nome-asc">Nome (A→Z)</SelectItem>
+            <SelectItem value="nome-desc">Nome (Z→A)</SelectItem>
+            <SelectItem value="tipo-asc">Tipo (A→Z)</SelectItem>
+            <SelectItem value="tipo-desc">Tipo (Z→A)</SelectItem>
+            <SelectItem value="status-asc">Status (A→Z)</SelectItem>
+            <SelectItem value="status-desc">Status (Z→A)</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
