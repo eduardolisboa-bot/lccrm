@@ -1,9 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useFunnel } from "@/lib/funnel-context";
+import { FunnelSwitcher } from "@/components/crm/FunnelSwitcher";
 import { fmtBRL, fmtNum } from "@/lib/format";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, PieChart, Pie, Cell, Tooltip, LineChart, Line, CartesianGrid } from "recharts";
-import { TrendingUp, Users, Handshake, Target, CheckCircle2, XCircle, UserCheck, Network } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, PieChart, Pie, Cell, Tooltip, CartesianGrid } from "recharts";
+import { TrendingUp, Handshake, Target, CheckCircle2, XCircle, UserCheck, Network } from "lucide-react";
 
 export const Route = createFileRoute("/_app/dashboard")({
   component: Dashboard,
@@ -25,13 +28,36 @@ function KpiCard({ label, value, icon: Icon, accent }: { label: string; value: s
   );
 }
 
+function currentMonthStart() {
+  const d = new Date();
+  return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0, 10);
+}
+function nextMonth(mes: string) {
+  const d = new Date(mes);
+  d.setMonth(d.getMonth() + 1);
+  return d.toISOString().slice(0, 10);
+}
+
 function Dashboard() {
+  const { selectedId: funnelId, funnels } = useFunnel();
+  const mes = currentMonthStart();
+  const funnelName = funnels.find((f) => f.id === funnelId)?.nome ?? "—";
+
   const { data: opps = [] } = useQuery({
-    queryKey: ["opps-all"],
+    queryKey: ["opps-all", funnelId],
     queryFn: async () => {
-      const { data } = await supabase.from("opportunities").select("*, pipeline_stages(nome,tipo,cor,ordem), partners(nome)");
+      if (!funnelId) return [];
+      const { data } = await supabase.from("opportunities")
+        .select("*, pipeline_stages(nome,tipo,cor,ordem), partners(nome)")
+        .eq("funnel_id", funnelId);
       return data ?? [];
     },
+    enabled: !!funnelId,
+  });
+  const { data: stages = [] } = useQuery({
+    queryKey: ["stages-dashboard", funnelId],
+    queryFn: async () => funnelId ? (await supabase.from("pipeline_stages").select("*").eq("funnel_id", funnelId).order("ordem")).data ?? [] : [],
+    enabled: !!funnelId,
   });
   const { data: partners = [] } = useQuery({
     queryKey: ["partners-all"],
@@ -41,9 +67,20 @@ function Dashboard() {
     queryKey: ["clients-all"],
     queryFn: async () => (await supabase.from("clients").select("*")).data ?? [],
   });
-  const { data: stages = [] } = useQuery({
-    queryKey: ["stages-all"],
-    queryFn: async () => (await supabase.from("pipeline_stages").select("*").order("ordem")).data ?? [],
+  const { data: funnelGoal } = useQuery({
+    queryKey: ["funnel-goal-dash", funnelId, mes],
+    queryFn: async () => funnelId ? (await supabase.from("funnel_goals").select("*").eq("funnel_id", funnelId).eq("mes", mes).maybeSingle()).data : null,
+    enabled: !!funnelId,
+  });
+  const { data: stageGoals = [] } = useQuery({
+    queryKey: ["stage-goals-dash", funnelId, mes, stages.length],
+    queryFn: async () => stages.length ? (await supabase.from("stage_goals").select("*").in("stage_id", stages.map((s: any) => s.id)).eq("mes", mes)).data ?? [] : [],
+    enabled: stages.length > 0,
+  });
+  const { data: oppsMes = [] } = useQuery({
+    queryKey: ["opps-mes", funnelId, mes],
+    queryFn: async () => funnelId ? (await supabase.from("opportunities").select("etapa_id,valor_estimado,created_at").eq("funnel_id", funnelId).gte("created_at", mes).lt("created_at", nextMonth(mes))).data ?? [] : [],
+    enabled: !!funnelId,
   });
 
   const total = opps.length;
@@ -55,9 +92,21 @@ function Dashboard() {
   const directClients = clients.filter((c: any) => c.tipo_cliente === "direto").length;
   const partnerClients = clients.filter((c: any) => c.tipo_cliente === "parceiro").length;
 
+  const realizadoMes = oppsMes.reduce((s: number, o: any) => s + Number(o.valor_estimado ?? 0), 0);
+  const metaFunil = Number(funnelGoal?.valor_meta ?? 0);
+  const pctFunil = metaFunil > 0 ? Math.min(100, (realizadoMes / metaFunil) * 100) : 0;
+
   const funnel = stages.map((s: any) => {
     const list = opps.filter((o: any) => o.etapa_id === s.id);
     return { nome: s.nome, count: list.length, valor: list.reduce((sum: number, o: any) => sum + Number(o.valor_estimado ?? 0), 0), cor: s.cor };
+  });
+
+  const stageProgress = stages.map((s: any) => {
+    const goal = stageGoals.find((g: any) => g.stage_id === s.id);
+    const real = oppsMes.filter((o: any) => o.etapa_id === s.id).reduce((sum: number, o: any) => sum + Number(o.valor_estimado ?? 0), 0);
+    const meta = Number(goal?.valor_meta ?? 0);
+    const pct = meta > 0 ? Math.min(100, (real / meta) * 100) : 0;
+    return { ...s, real, meta, pct };
   });
 
   const byPartner = partners
@@ -76,9 +125,12 @@ function Dashboard() {
 
   return (
     <div className="p-8 space-y-6">
-      <div>
-        <h1 className="text-3xl font-serif">Dashboard</h1>
-        <p className="text-sm text-muted-foreground mt-1">Visão executiva da operação Lisboa Capital</p>
+      <div className="flex items-start justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-3xl font-serif">Dashboard</h1>
+          <p className="text-sm text-muted-foreground mt-1">Funil ativo: <span className="text-primary">{funnelName}</span></p>
+        </div>
+        <FunnelSwitcher />
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -92,9 +144,34 @@ function Dashboard() {
         <KpiCard label="Via Parceiros" value={fmtNum(partnerClients)} icon={Network} />
       </div>
 
+      <div className="bg-card border rounded-xl p-5">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-serif text-lg">Meta do mês — {funnelName}</h3>
+          <div className="text-xs text-muted-foreground">{fmtBRL(realizadoMes)} / {fmtBRL(metaFunil)}</div>
+        </div>
+        <Progress value={pctFunil} className="h-3" />
+        <div className="text-xs text-muted-foreground mt-2">{pctFunil.toFixed(1)}% concluído</div>
+      </div>
+
+      <div className="bg-card border rounded-xl p-5">
+        <h3 className="font-serif text-lg mb-4">Metas por etapa (mês atual)</h3>
+        <div className="space-y-3">
+          {stageProgress.map((s: any) => (
+            <div key={s.id}>
+              <div className="flex items-center justify-between text-sm mb-1">
+                <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full" style={{ background: s.cor }} />{s.nome}</span>
+                <span className="text-xs text-muted-foreground">{fmtBRL(s.real)} / {fmtBRL(s.meta)} · {s.pct.toFixed(1)}%</span>
+              </div>
+              <Progress value={s.pct} />
+            </div>
+          ))}
+          {!stageProgress.length && <div className="text-sm text-muted-foreground">Sem etapas no funil.</div>}
+        </div>
+      </div>
+
       <div className="grid lg:grid-cols-2 gap-4">
         <div className="bg-card border rounded-xl p-5">
-          <h3 className="font-serif text-lg mb-4">Funil por Etapa</h3>
+          <h3 className="font-serif text-lg mb-4">Funil por etapa</h3>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={funnel} layout="vertical" margin={{ left: 80 }}>
               <CartesianGrid stroke="rgba(255,255,255,0.04)" />
@@ -102,7 +179,7 @@ function Dashboard() {
               <YAxis type="category" dataKey="nome" stroke="#8B949E" fontSize={11} width={120} />
               <Tooltip contentStyle={{ background: "#1A1D24", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8 }} />
               <Bar dataKey="count" radius={[0, 4, 4, 0]}>
-                {funnel.map((f: any, i) => <Cell key={i} fill={f.cor} />)}
+                {funnel.map((f: any, i: number) => <Cell key={i} fill={f.cor} />)}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
@@ -125,7 +202,7 @@ function Dashboard() {
         </div>
 
         <div className="bg-card border rounded-xl p-5">
-          <h3 className="font-serif text-lg mb-4">Distribuição por Temperatura</h3>
+          <h3 className="font-serif text-lg mb-4">Distribuição por temperatura</h3>
           <ResponsiveContainer width="100%" height={260}>
             <PieChart>
               <Pie data={tempData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={100} paddingAngle={3}>
@@ -146,7 +223,7 @@ function Dashboard() {
         </div>
 
         <div className="bg-card border rounded-xl p-5">
-          <h3 className="font-serif text-lg mb-4">Resumo Operacional</h3>
+          <h3 className="font-serif text-lg mb-4">Resumo operacional</h3>
           <div className="space-y-3 text-sm">
             <Row label="Ticket médio" value={fmtBRL(total > 0 ? pipelineValue / total : 0)} />
             <Row label="Total de clientes" value={fmtNum(clients.length)} />
