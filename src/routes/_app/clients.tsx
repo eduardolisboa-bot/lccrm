@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { SortableTh } from "@/components/crm/SortableTh";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,15 @@ function Clients() {
   const [tipo, setTipo] = useState<string>("all");
   const [parceiro, setParceiro] = useState<string>("all");
   const [page, setPage] = useState(1);
+  const [sortKey, setSortKey] = useState<"nome" | "tipo_cliente" | "patrimonio_estimado">("nome");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const PAGE_SIZE = 20;
+
+  const toggleSort = (k: typeof sortKey) => {
+    if (sortKey === k) setSortDir(sortDir === "asc" ? "desc" : "asc");
+    else { setSortKey(k); setSortDir("asc"); }
+    setPage(1);
+  };
 
   const partnerOptions = useMemo(() => {
     const map = new Map<string, string>();
@@ -36,13 +45,22 @@ function Clients() {
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
-    return clients.filter((c: any) => {
+    const out = clients.filter((c: any) => {
       if (tipo !== "all" && c.tipo_cliente !== tipo) return false;
       if (parceiro !== "all" && c.parceiro_id !== parceiro) return false;
       if (!term) return true;
       return [c.nome, c.email, c.telefone, c.cpf_cnpj].some((v: any) => v?.toLowerCase().includes(term));
     });
-  }, [clients, q, tipo, parceiro]);
+    const dir = sortDir === "asc" ? 1 : -1;
+    return [...out].sort((a: any, b: any) => {
+      const av = a[sortKey], bv = b[sortKey];
+      if (av == null && bv == null) return 0;
+      if (av == null) return 1;
+      if (bv == null) return -1;
+      if (typeof av === "number" && typeof bv === "number") return (av - bv) * dir;
+      return String(av).localeCompare(String(bv), "pt-BR") * dir;
+    });
+  }, [clients, q, tipo, parceiro, sortKey, sortDir]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -86,10 +104,10 @@ function Clients() {
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-xs uppercase tracking-wider text-muted-foreground border-b border-border">
-              <th className="px-5 py-3">Nome</th>
-              <th className="px-5 py-3">Tipo</th>
+              <SortableTh label="Nome" k="nome" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} />
+              <SortableTh label="Tipo" k="tipo_cliente" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} />
               <th className="px-5 py-3">Parceiro</th>
-              <th className="px-5 py-3">Patrimônio</th>
+              <SortableTh label="Patrimônio" k="patrimonio_estimado" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} />
               <th className="px-5 py-3">Email</th>
             </tr>
           </thead>
