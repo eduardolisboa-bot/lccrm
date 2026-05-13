@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
+import { FunnelProvider } from "@/lib/funnel-context";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 
 export const Route = createFileRoute("/_app")({
@@ -24,11 +25,13 @@ function AppLayout() {
   }
 
   return (
-    <div className="flex min-h-screen w-full bg-background">
-      <AppSidebar />
-      <main className="flex-1 min-w-0 overflow-x-hidden">
-        <Outlet />
-      </main>
-    </div>
+    <FunnelProvider>
+      <div className="flex min-h-screen w-full bg-background">
+        <AppSidebar />
+        <main className="flex-1 min-w-0 overflow-x-hidden">
+          <Outlet />
+        </main>
+      </div>
+    </FunnelProvider>
   );
 }
