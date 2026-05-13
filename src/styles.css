@@ -1,115 +1,85 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@400;500;600;700&display=swap");
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
-  --color-navy: var(--navy);
-  --color-ocean: var(--ocean);
-  --color-teal: var(--teal);
-  --color-teal-mid: var(--teal-mid);
-  --color-mint: var(--mint);
-  --color-amber: var(--amber);
-  --color-amber-lt: var(--amber-lt);
-  --color-coral: var(--coral);
-  --color-coral-lt: var(--coral-lt);
-  --color-slate: var(--slate);
-  --color-light: var(--light);
-  --color-off-wh: var(--off-wh);
-  --color-muted: var(--muted);
-  --color-green: var(--green);
-  --color-green-lt: var(--green-lt);
-  --color-purp: var(--purp);
-  --color-purp-lt: var(--purp-lt);
-  --color-background: var(--navy);
-  --color-foreground: #ffffff;
-  --color-border: var(--border);
-  --color-primary: var(--teal-mid);
-  --color-primary-foreground: #ffffff;
-  --color-card: rgba(255, 255, 255, 0.04);
-  --color-card-foreground: #ffffff;
-  --radius: 1rem;
+  --font-serif: "Cormorant Garamond", Georgia, serif;
+  --color-background: var(--bg-base);
+  --color-foreground: var(--text-primary);
+  --color-card: var(--bg-surface);
+  --color-card-foreground: var(--text-primary);
+  --color-popover: var(--bg-elevated);
+  --color-popover-foreground: var(--text-primary);
+  --color-primary: var(--accent-gold);
+  --color-primary-foreground: #0A0C10;
+  --color-secondary: var(--bg-elevated);
+  --color-secondary-foreground: var(--text-primary);
+  --color-muted: var(--bg-elevated);
+  --color-muted-foreground: var(--text-secondary);
+  --color-accent: var(--accent-gold-muted);
+  --color-accent-foreground: var(--accent-gold);
+  --color-destructive: var(--danger);
+  --color-destructive-foreground: #fff;
+  --color-border: var(--border-subtle);
+  --color-input: var(--border-subtle);
+  --color-ring: var(--accent-gold);
+  --color-sidebar: var(--bg-surface);
+  --color-sidebar-foreground: var(--text-primary);
+  --color-sidebar-primary: var(--accent-gold);
+  --color-sidebar-primary-foreground: #0A0C10;
+  --color-sidebar-accent: var(--accent-gold-muted);
+  --color-sidebar-accent-foreground: var(--accent-gold);
+  --color-sidebar-border: var(--border-subtle);
+  --color-sidebar-ring: var(--accent-gold);
+  --radius: 0.625rem;
 }
 
 :root {
-  --navy: #0b2735;
-  --ocean: #0d4f6b;
-  --teal: #0a7e6a;
-  --teal-mid: #0d9e87;
-  --mint: #c8ede7;
-  --amber: #f5a623;
-  --amber-lt: #fef0d0;
-  --coral: #e05b3a;
-  --coral-lt: #fadcd4;
-  --slate: #4a6070;
-  --light: #e5f1f7;
-  --off-wh: #f0f7fa;
-  --muted: #8ca4b0;
-  --green: #2e8b57;
-  --green-lt: #d4edda;
-  --purp: #4c3d8f;
-  --purp-lt: #eeedfe;
-  --border: rgba(255, 255, 255, 0.08);
+  --bg-base: #0A0C10;
+  --bg-surface: #111318;
+  --bg-elevated: #1A1D24;
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --accent-gold: #C9A84C;
+  --accent-gold-muted: rgba(201, 168, 76, 0.12);
+  --text-primary: #F0F0F0;
+  --text-secondary: #8B949E;
+  --text-muted: #4A5568;
+  --success: #22C55E;
+  --danger: #EF4444;
+  --warning: #F59E0B;
+  --info: #3B82F6;
 }
 
 @layer base {
   html, body {
-    background: var(--navy);
-    color: #fff;
+    background: var(--bg-base);
+    color: var(--text-primary);
     font-family: "Inter", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
-    overflow: hidden;
   }
   body { margin: 0; }
+  * { border-color: var(--border-subtle); }
 }
 
-.glass {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  backdrop-filter: blur(12px);
-  border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35), 0 4px 16px rgba(0, 0, 0, 0.2);
+.font-serif { font-family: "Cormorant Garamond", Georgia, serif; }
+
+.scrollbar-slim::-webkit-scrollbar { width: 6px; height: 6px; }
+.scrollbar-slim::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, #E6C76A 0%, #C9A84C 60%, #8E7232 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
-.glass-hover {
-  transition: transform 300ms ease, box-shadow 300ms ease;
-}
-.glass-hover:hover {
-  transform: translateY(-8px) rotate(0deg);
-  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.45);
-}
-
-.font-mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
-
-.grid-bg {
+.bg-noise {
   background-image:
-    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
-  background-size: 60px 60px;
-  animation: gridShift 30s linear infinite;
-}
-@keyframes gridShift {
-  from { background-position: 0 0; }
-  to { background-position: 60px -60px; }
-}
-
-.scrollbar-none::-webkit-scrollbar { display: none; }
-.scrollbar-none { scrollbar-width: none; }
-
-/* Safe horizontal padding so content never collides with floating side arrows (~56px each) */
-.slide-pad {
-  padding-left: clamp(1.5rem, 5vw, 5rem);
-  padding-right: clamp(4.5rem, 7vw, 6rem);
-  padding-top: clamp(3.5rem, 6vh, 4.5rem);
-  padding-bottom: clamp(3.5rem, 6vh, 4.5rem);
-}
-@media (min-width: 768px) {
-  .slide-pad {
-    padding-left: clamp(5rem, 7vw, 7rem);
-    padding-right: clamp(5rem, 7vw, 7rem);
-  }
+    radial-gradient(at 20% 10%, rgba(201,168,76,0.06) 0, transparent 40%),
+    radial-gradient(at 80% 90%, rgba(59,130,246,0.04) 0, transparent 40%),
+    linear-gradient(135deg, #0A0C10 0%, #141820 100%);
 }
