@@ -18,34 +18,25 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [hasUsers, setHasUsers] = useState<boolean | null>(null);
-
-  // Permitir 1ª conta (Master). Depois disso, o signup público fica bloqueado.
-  useEffect(() => {
-    supabase.from("user_profiles").select("id", { count: "exact", head: true })
-      .then(({ count }) => setHasUsers((count ?? 0) > 0));
-  }, []);
+  const [forgotMode, setForgotMode] = useState(false);
 
   useEffect(() => {
     if (!loading && user) navigate({ to: "/dashboard" });
   }, [user, loading, navigate]);
 
-  const allowFirstSignup = hasUsers === false;
-  const [signupMode, setSignupMode] = useState(false);
-
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     try {
-      if (signupMode && allowFirstSignup) {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+      if (forgotMode) {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
         });
         if (error) toast.error(error.message);
-        else toast.success("Conta Master criada. Você já pode entrar.");
-        setSignupMode(false);
+        else {
+          toast.success("Enviamos um link de redefinição para seu e-mail.");
+          setForgotMode(false);
+        }
       } else {
         const { error } = await signIn(email, password);
         if (error) toast.error(error);
@@ -67,37 +58,35 @@ function LoginPage() {
         </div>
         <div className="bg-card/80 backdrop-blur-xl border rounded-xl p-8 shadow-2xl">
           <h1 className="text-2xl font-serif text-center mb-6">
-            {signupMode ? "Cadastro do Master" : "Acesso restrito"}
+            {forgotMode ? "Redefinir senha" : "Acesso restrito"}
           </h1>
           <form onSubmit={onSubmit} className="space-y-4">
             <div>
               <Label htmlFor="email">E-mail</Label>
               <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1" />
             </div>
-            <div>
-              <Label htmlFor="password">Senha</Label>
-              <Input id="password" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1" />
-            </div>
+            {!forgotMode && (
+              <div>
+                <Label htmlFor="password">Senha</Label>
+                <Input id="password" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1" />
+              </div>
+            )}
             <Button type="submit" disabled={submitting} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-medium">
-              {submitting ? "Aguarde…" : signupMode ? "Criar Master" : "Entrar"}
+              {submitting ? "Aguarde…" : forgotMode ? "Enviar link" : "Entrar"}
             </Button>
           </form>
-          {allowFirstSignup && (
-            <div className="mt-4 text-center">
-              <button
-                type="button"
-                onClick={() => setSignupMode((s) => !s)}
-                className="text-xs text-muted-foreground hover:text-primary"
-              >
-                {signupMode ? "Já tem conta? Entrar" : "Primeiro acesso? Criar conta Master"}
-              </button>
-            </div>
-          )}
+          <div className="mt-4 text-center">
+            <button
+              type="button"
+              onClick={() => setForgotMode((s) => !s)}
+              className="text-xs text-muted-foreground hover:text-primary"
+            >
+              {forgotMode ? "Voltar para o login" : "Esqueci minha senha"}
+            </button>
+          </div>
         </div>
         <p className="text-center text-xs text-muted-foreground mt-6">
-          {allowFirstSignup
-            ? "O primeiro usuário cadastrado se torna Master automaticamente."
-            : "Apenas o Master pode cadastrar novos usuários no sistema."}
+          Apenas o Master pode cadastrar novos usuários no sistema.
         </p>
       </div>
     </div>
