@@ -216,3 +216,112 @@ function NewClient() {
     </Dialog>
   );
 }
+
+function parseNum(v: any): number | null {
+  if (v == null || v === "") return null;
+  if (typeof v === "number") return v;
+  const s = String(v).replace(/[^\d,.-]/g, "").replace(/\.(?=\d{3}(\D|$))/g, "").replace(",", ".");
+  const n = Number(s);
+  return isNaN(n) ? null : n;
+}
+
+function normalizeTipo(v: any): "direto" | "parceiro" {
+  const s = String(v ?? "").trim().toLowerCase();
+  return s.startsWith("parc") || s.includes("via") ? "parceiro" : "direto";
+}
+
+function ImportClients() {
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [rows, setRows] = useState<any[]>([]);
+  const [fileName, setFileName] = useState("");
+  const [importing, setImporting] = useState(false);
+
+  const onFile = async (file: File) => {
+    setFileName(file.name);
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, { type: "array" });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const raw = XLSX.utils.sheet_to_json<any>(ws, { defval: "" });
+    const mapped = raw.map((r) => {
+      const get = (...keys: string[]) => {
+        for (const k of Object.keys(r)) {
+          const nk = k.trim().toLowerCase();
+          if (keys.some((x) => nk === x || nk.startsWith(x))) return r[k];
+        }
+        return "";
+      };
+      return {
+        nome: String(get("nome") ?? "").trim(),
+        tipo_cliente: normalizeTipo(get("tipo")),
+        email: String(get("email", "e-mail") ?? "").trim() || null,
+        telefone: String(get("telefone", "fone", "celular") ?? "").trim() || null,
+        cpf_cnpj: String(get("cpf/cnpj", "cpf", "cnpj", "documento") ?? "").trim() || null,
+        patrimonio_estimado: parseNum(get("patrimônio", "patrimonio")),
+      };
+    }).filter((r) => r.nome);
+    setRows(mapped);
+  };
+
+  const downloadTemplate = () => {
+    const ws = XLSX.utils.json_to_sheet([
+      { Nome: "João Silva", Tipo: "Direto", Email: "joao@email.com", Telefone: "11999999999", "CPF/CNPJ": "000.000.000-00", "Patrimônio (R$)": 100000 },
+    ]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Clientes");
+    XLSX.writeFile(wb, "modelo-clientes.xlsx");
+  };
+
+  const doImport = async () => {
+    if (!rows.length) return;
+    setImporting(true);
+    const { error } = await supabase.from("clients").insert(rows as any);
+    setImporting(false);
+    if (error) { toast.error(error.message); return; }
+    qc.invalidateQueries({ queryKey: ["clients-list"] });
+    qc.invalidateQueries({ queryKey: ["clients-all"] });
+    toast.success(`${rows.length} clientes importados`);
+    setOpen(false); setRows([]); setFileName("");
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setRows([]); setFileName(""); } }}>
+      <DialogTrigger asChild>
+        <Button variant="outline"><Upload className="w-4 h-4 mr-1" /> Importar</Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader><DialogTitle className="font-serif">Importar Clientes</DialogTitle></DialogHeader>
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Envie um arquivo Excel (.xlsx) com as colunas: <b>Nome</b>, <b>Tipo</b> (Direto ou Via Parceiro), <b>Email</b>, <b>Telefone</b>, <b>CPF/CNPJ</b>, <b>Patrimônio (R$)</b>.
+          </p>
+          <Button variant="ghost" size="sm" onClick={downloadTemplate}>
+            <Download className="w-4 h-4 mr-1" /> Baixar modelo
+          </Button>
+          <Input type="file" accept=".xlsx,.xls,.csv" onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])} />
+          {fileName && <div className="text-xs text-muted-foreground">{fileName} — {rows.length} linhas válidas</div>}
+          {rows.length > 0 && (
+            <div className="max-h-64 overflow-auto border rounded-md">
+              <table className="w-full text-xs">
+                <thead className="bg-muted/50 sticky top-0">
+                  <tr><th className="px-2 py-1 text-left">Nome</th><th className="px-2 py-1 text-left">Tipo</th><th className="px-2 py-1 text-left">Email</th><th className="px-2 py-1 text-left">Telefone</th><th className="px-2 py-1 text-left">CPF/CNPJ</th><th className="px-2 py-1 text-right">Patrimônio</th></tr>
+                </thead>
+                <tbody>
+                  {rows.slice(0, 50).map((r, i) => (
+                    <tr key={i} className="border-t border-border">
+                      <td className="px-2 py-1">{r.nome}</td><td className="px-2 py-1">{r.tipo_cliente}</td><td className="px-2 py-1">{r.email ?? "—"}</td><td className="px-2 py-1">{r.telefone ?? "—"}</td><td className="px-2 py-1">{r.cpf_cnpj ?? "—"}</td><td className="px-2 py-1 text-right">{r.patrimonio_estimado != null ? fmtBRL(r.patrimonio_estimado) : "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {rows.length > 50 && <div className="text-xs text-muted-foreground p-2">…e mais {rows.length - 50} linhas</div>}
+            </div>
+          )}
+          <Button onClick={doImport} disabled={!rows.length || importing} className="w-full">
+            {importing ? "Importando…" : `Importar ${rows.length} clientes`}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
