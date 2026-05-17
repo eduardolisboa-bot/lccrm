@@ -327,3 +327,33 @@ function ImportClients() {
     </Dialog>
   );
 }
+
+function DeleteClientButton({ id, nome }: { id: string; nome: string }) {
+  const qc = useQueryClient();
+  const del = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("clients").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["clients-list"] });
+      qc.invalidateQueries({ queryKey: ["clients-all"] });
+      toast.success("Cliente excluído");
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="text-muted-foreground hover:text-destructive"
+      disabled={del.isPending}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (confirm(`Excluir cliente "${nome}"? Esta ação não pode ser desfeita.`)) del.mutate();
+      }}
+    >
+      <Trash2 className="w-4 h-4" />
+    </Button>
+  );
+}
