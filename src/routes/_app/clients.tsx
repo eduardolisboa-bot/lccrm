@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { fmtBRL } from "@/lib/format";
-import { Plus, Upload, Download, Trash2 } from "lucide-react";
+import { Plus, Upload, Download, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
 
@@ -113,7 +113,7 @@ function Clients() {
               <th className="px-5 py-3">Parceiro</th>
               <SortableTh label="Patrimônio" k="patrimonio_estimado" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} />
               <th className="px-5 py-3">Email</th>
-              <th className="px-5 py-3 w-12"></th>
+              <th className="px-5 py-3 w-24"></th>
             </tr>
           </thead>
           <tbody>
@@ -128,7 +128,12 @@ function Clients() {
                 <td className="px-5 py-3 text-muted-foreground">{c.partners?.nome ?? "—"}</td>
                 <td className="px-5 py-3">{fmtBRL(c.patrimonio_estimado)}</td>
                 <td className="px-5 py-3 text-muted-foreground">{c.email ?? "—"}</td>
-                <td className="px-5 py-3 text-right"><DeleteClientButton id={c.id} nome={c.nome} /></td>
+                <td className="px-5 py-3 text-right">
+                  <div className="flex justify-end gap-1">
+                    <EditClientButton client={c} />
+                    <DeleteClientButton id={c.id} nome={c.nome} />
+                  </div>
+                </td>
               </tr>
             ))}
             {filtered.length === 0 && <tr><td colSpan={6} className="text-center text-muted-foreground py-8">Nenhum cliente encontrado.</td></tr>}
@@ -355,5 +360,91 @@ function DeleteClientButton({ id, nome }: { id: string; nome: string }) {
     >
       <Trash2 className="w-4 h-4" />
     </Button>
+  );
+}
+
+function EditClientButton({ client }: { client: any }) {
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({
+    nome: client.nome ?? "",
+    tipo_cliente: client.tipo_cliente ?? "direto",
+    parceiro_id: client.parceiro_id ?? "",
+    email: client.email ?? "",
+    telefone: client.telefone ?? "",
+    cpf_cnpj: client.cpf_cnpj ?? "",
+    patrimonio_estimado: client.patrimonio_estimado?.toString() ?? "",
+  });
+  const { data: partners = [] } = useQuery({
+    queryKey: ["partners-select"],
+    queryFn: async () => (await supabase.from("partners").select("id,nome").eq("status", "ativo")).data ?? [],
+    enabled: open,
+  });
+  const update = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("clients").update({
+        nome: form.nome,
+        tipo_cliente: form.tipo_cliente as any,
+        parceiro_id: form.tipo_cliente === "parceiro" ? form.parceiro_id || null : null,
+        email: form.email || null,
+        telefone: form.telefone || null,
+        cpf_cnpj: form.cpf_cnpj || null,
+        patrimonio_estimado: form.patrimonio_estimado ? Number(form.patrimonio_estimado) : null,
+      }).eq("id", client.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["clients-list"] });
+      qc.invalidateQueries({ queryKey: ["clients-all"] });
+      qc.invalidateQueries({ queryKey: ["client", client.id] });
+      toast.success("Cliente atualizado");
+      setOpen(false);
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
+          <Pencil className="w-4 h-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader><DialogTitle className="font-serif">Editar Cliente</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          <div><Label>Nome</Label><Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} /></div>
+          <div>
+            <Label>Tipo</Label>
+            <Select value={form.tipo_cliente} onValueChange={(v) => setForm({ ...form, tipo_cliente: v })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="direto">Direto</SelectItem>
+                <SelectItem value="parceiro">Via Parceiro</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {form.tipo_cliente === "parceiro" && (
+            <div>
+              <Label>Parceiro</Label>
+              <Select value={form.parceiro_id} onValueChange={(v) => setForm({ ...form, parceiro_id: v })}>
+                <SelectTrigger><SelectValue placeholder="Selecione…" /></SelectTrigger>
+                <SelectContent>{partners.map((p: any) => <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+          )}
+          <div className="grid grid-cols-2 gap-2">
+            <div><Label>Email</Label><Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
+            <div><Label>Telefone</Label><Input value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} /></div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div><Label>CPF/CNPJ</Label><Input value={form.cpf_cnpj} onChange={(e) => setForm({ ...form, cpf_cnpj: e.target.value })} /></div>
+            <div><Label>Patrimônio (R$)</Label><Input type="number" value={form.patrimonio_estimado} onChange={(e) => setForm({ ...form, patrimonio_estimado: e.target.value })} /></div>
+          </div>
+          <Button onClick={() => update.mutate()} disabled={!form.nome || update.isPending} className="w-full">
+            {update.isPending ? "Salvando…" : "Salvar"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
