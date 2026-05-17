@@ -128,7 +128,12 @@ function Clients() {
                 <td className="px-5 py-3 text-muted-foreground">{c.partners?.nome ?? "—"}</td>
                 <td className="px-5 py-3">{fmtBRL(c.patrimonio_estimado)}</td>
                 <td className="px-5 py-3 text-muted-foreground">{c.email ?? "—"}</td>
-                <td className="px-5 py-3 text-right"><DeleteClientButton id={c.id} nome={c.nome} /></td>
+                <td className="px-5 py-3 text-right">
+                  <div className="flex justify-end gap-1">
+                    <EditClientButton client={c} />
+                    <DeleteClientButton id={c.id} nome={c.nome} />
+                  </div>
+                </td>
               </tr>
             ))}
             {filtered.length === 0 && <tr><td colSpan={6} className="text-center text-muted-foreground py-8">Nenhum cliente encontrado.</td></tr>}
