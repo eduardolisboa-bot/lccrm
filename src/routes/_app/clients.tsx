@@ -113,7 +113,7 @@ function Clients() {
               <th className="px-5 py-3">Parceiro</th>
               <SortableTh label="Patrimônio" k="patrimonio_estimado" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} />
               <th className="px-5 py-3">Email</th>
-              <th className="px-5 py-3 w-12"></th>
+              <th className="px-5 py-3 w-24"></th>
             </tr>
           </thead>
           <tbody>
