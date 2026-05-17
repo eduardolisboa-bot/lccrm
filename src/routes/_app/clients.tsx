@@ -10,8 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { fmtBRL } from "@/lib/format";
-import { Plus } from "lucide-react";
+import { Plus, Upload, Download } from "lucide-react";
 import { toast } from "sonner";
+import * as XLSX from "xlsx";
 
 export const Route = createFileRoute("/_app/clients")({
   component: Clients,
@@ -75,7 +76,10 @@ function Clients() {
           <h1 className="text-3xl font-serif">Clientes</h1>
           <p className="text-sm text-muted-foreground mt-1">{filtered.length} de {clients.length} clientes</p>
         </div>
-        <NewClient />
+        <div className="flex gap-2">
+          <ImportClients />
+          <NewClient />
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2 items-center">
