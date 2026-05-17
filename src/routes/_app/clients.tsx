@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { fmtBRL } from "@/lib/format";
-import { Plus, Upload, Download } from "lucide-react";
+import { Plus, Upload, Download, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
 
@@ -113,6 +113,7 @@ function Clients() {
               <th className="px-5 py-3">Parceiro</th>
               <SortableTh label="Patrimônio" k="patrimonio_estimado" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} />
               <th className="px-5 py-3">Email</th>
+              <th className="px-5 py-3 w-12"></th>
             </tr>
           </thead>
           <tbody>
@@ -127,9 +128,10 @@ function Clients() {
                 <td className="px-5 py-3 text-muted-foreground">{c.partners?.nome ?? "—"}</td>
                 <td className="px-5 py-3">{fmtBRL(c.patrimonio_estimado)}</td>
                 <td className="px-5 py-3 text-muted-foreground">{c.email ?? "—"}</td>
+                <td className="px-5 py-3 text-right"><DeleteClientButton id={c.id} nome={c.nome} /></td>
               </tr>
             ))}
-            {filtered.length === 0 && <tr><td colSpan={5} className="text-center text-muted-foreground py-8">Nenhum cliente encontrado.</td></tr>}
+            {filtered.length === 0 && <tr><td colSpan={6} className="text-center text-muted-foreground py-8">Nenhum cliente encontrado.</td></tr>}
           </tbody>
         </table>
       </div>
@@ -323,5 +325,35 @@ function ImportClients() {
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function DeleteClientButton({ id, nome }: { id: string; nome: string }) {
+  const qc = useQueryClient();
+  const del = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("clients").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["clients-list"] });
+      qc.invalidateQueries({ queryKey: ["clients-all"] });
+      toast.success("Cliente excluído");
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="text-muted-foreground hover:text-destructive"
+      disabled={del.isPending}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (confirm(`Excluir cliente "${nome}"? Esta ação não pode ser desfeita.`)) del.mutate();
+      }}
+    >
+      <Trash2 className="w-4 h-4" />
+    </Button>
   );
 }
