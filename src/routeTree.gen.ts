@@ -22,6 +22,7 @@ import { Route as AppCrmRouteImport } from './routes/_app/crm'
 import { Route as AppClientsRouteImport } from './routes/_app/clients'
 import { Route as AppActivitiesRouteImport } from './routes/_app/activities'
 import { Route as AppPartnersIdRouteImport } from './routes/_app/partners.$id'
+import { Route as AppClientsDuplicatesRouteImport } from './routes/_app/clients.duplicates'
 import { Route as AppClientsIdRouteImport } from './routes/_app/clients.$id'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -88,6 +89,11 @@ const AppPartnersIdRoute = AppPartnersIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AppPartnersRoute,
 } as any)
+const AppClientsDuplicatesRoute = AppClientsDuplicatesRouteImport.update({
+  id: '/duplicates',
+  path: '/duplicates',
+  getParentRoute: () => AppClientsRoute,
+} as any)
 const AppClientsIdRoute = AppClientsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -107,6 +113,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AppSettingsRoute
   '/users': typeof AppUsersRoute
   '/clients/$id': typeof AppClientsIdRoute
+  '/clients/duplicates': typeof AppClientsDuplicatesRoute
   '/partners/$id': typeof AppPartnersIdRoute
 }
 export interface FileRoutesByTo {
@@ -122,6 +129,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AppSettingsRoute
   '/users': typeof AppUsersRoute
   '/clients/$id': typeof AppClientsIdRoute
+  '/clients/duplicates': typeof AppClientsDuplicatesRoute
   '/partners/$id': typeof AppPartnersIdRoute
 }
 export interface FileRoutesById {
@@ -139,6 +147,7 @@ export interface FileRoutesById {
   '/_app/settings': typeof AppSettingsRoute
   '/_app/users': typeof AppUsersRoute
   '/_app/clients/$id': typeof AppClientsIdRoute
+  '/_app/clients/duplicates': typeof AppClientsDuplicatesRoute
   '/_app/partners/$id': typeof AppPartnersIdRoute
 }
 export interface FileRouteTypes {
@@ -156,6 +165,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/users'
     | '/clients/$id'
+    | '/clients/duplicates'
     | '/partners/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -171,6 +181,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/users'
     | '/clients/$id'
+    | '/clients/duplicates'
     | '/partners/$id'
   id:
     | '__root__'
@@ -187,6 +198,7 @@ export interface FileRouteTypes {
     | '/_app/settings'
     | '/_app/users'
     | '/_app/clients/$id'
+    | '/_app/clients/duplicates'
     | '/_app/partners/$id'
   fileRoutesById: FileRoutesById
 }
@@ -290,6 +302,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPartnersIdRouteImport
       parentRoute: typeof AppPartnersRoute
     }
+    '/_app/clients/duplicates': {
+      id: '/_app/clients/duplicates'
+      path: '/duplicates'
+      fullPath: '/clients/duplicates'
+      preLoaderRoute: typeof AppClientsDuplicatesRouteImport
+      parentRoute: typeof AppClientsRoute
+    }
     '/_app/clients/$id': {
       id: '/_app/clients/$id'
       path: '/$id'
@@ -302,10 +321,12 @@ declare module '@tanstack/react-router' {
 
 interface AppClientsRouteChildren {
   AppClientsIdRoute: typeof AppClientsIdRoute
+  AppClientsDuplicatesRoute: typeof AppClientsDuplicatesRoute
 }
 
 const AppClientsRouteChildren: AppClientsRouteChildren = {
   AppClientsIdRoute: AppClientsIdRoute,
+  AppClientsDuplicatesRoute: AppClientsDuplicatesRoute,
 }
 
 const AppClientsRouteWithChildren = AppClientsRoute._addFileChildren(
@@ -357,13 +378,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

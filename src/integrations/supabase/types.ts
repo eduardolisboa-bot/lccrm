@@ -18,31 +18,64 @@ export type Database = {
         Row: {
           client_id: string | null
           created_at: string
+          data_agendada: string | null
           data_atividade: string
           descricao: string | null
+          duracao_minutos: number | null
+          google_event_id: string | null
+          horario_agendado: string | null
           id: string
+          lembrete_minutos: number | null
           opportunity_id: string | null
+          parceiro_id: string | null
+          prioridade: string | null
+          recorrencia: string | null
+          responsavel_id: string | null
+          status_atividade: string | null
           tipo_atividade: string | null
+          titulo: string | null
           user_id: string | null
         }
         Insert: {
           client_id?: string | null
           created_at?: string
+          data_agendada?: string | null
           data_atividade?: string
           descricao?: string | null
+          duracao_minutos?: number | null
+          google_event_id?: string | null
+          horario_agendado?: string | null
           id?: string
+          lembrete_minutos?: number | null
           opportunity_id?: string | null
+          parceiro_id?: string | null
+          prioridade?: string | null
+          recorrencia?: string | null
+          responsavel_id?: string | null
+          status_atividade?: string | null
           tipo_atividade?: string | null
+          titulo?: string | null
           user_id?: string | null
         }
         Update: {
           client_id?: string | null
           created_at?: string
+          data_agendada?: string | null
           data_atividade?: string
           descricao?: string | null
+          duracao_minutos?: number | null
+          google_event_id?: string | null
+          horario_agendado?: string | null
           id?: string
+          lembrete_minutos?: number | null
           opportunity_id?: string | null
+          parceiro_id?: string | null
+          prioridade?: string | null
+          recorrencia?: string | null
+          responsavel_id?: string | null
+          status_atividade?: string | null
           tipo_atividade?: string | null
+          titulo?: string | null
           user_id?: string | null
         }
         Relationships: [
@@ -61,6 +94,20 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "activities_parceiro_id_fkey"
+            columns: ["parceiro_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activities_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "activities_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -69,41 +116,348 @@ export type Database = {
           },
         ]
       }
-      clients: {
+      audit_logs: {
         Row: {
-          cpf_cnpj: string | null
+          acao: string
           created_at: string
-          email: string | null
+          dados_anteriores: Json | null
+          dados_novos: Json | null
+          entidade: string
+          entidade_id: string | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          acao: string
+          created_at?: string
+          dados_anteriores?: Json | null
+          dados_novos?: Json | null
+          entidade: string
+          entidade_id?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          acao?: string
+          created_at?: string
+          dados_anteriores?: Json | null
+          dados_novos?: Json | null
+          entidade?: string
+          entidade_id?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_documents: {
+        Row: {
+          categoria: string | null
+          client_id: string
+          created_at: string
           id: string
           nome: string
+          opportunity_id: string | null
+          parceiro_id: string | null
+          storage_path: string
+          tamanho_bytes: number | null
+          tipo_mime: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          categoria?: string | null
+          client_id: string
+          created_at?: string
+          id?: string
+          nome: string
+          opportunity_id?: string | null
+          parceiro_id?: string | null
+          storage_path: string
+          tamanho_bytes?: number | null
+          tipo_mime?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          categoria?: string | null
+          client_id?: string
+          created_at?: string
+          id?: string
+          nome?: string
+          opportunity_id?: string | null
+          parceiro_id?: string | null
+          storage_path?: string
+          tamanho_bytes?: number | null
+          tipo_mime?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_documents_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_documents_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_documents_parceiro_id_fkey"
+            columns: ["parceiro_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_documents_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_duplicates: {
+        Row: {
+          campos_conflitantes: Json | null
+          client_a_id: string
+          client_b_id: string
+          created_at: string
+          fundido_por: string | null
+          id: string
+          ignorado_por: string | null
+          log_fusao: Json | null
+          motivo: string
+          similaridade: number | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          campos_conflitantes?: Json | null
+          client_a_id: string
+          client_b_id: string
+          created_at?: string
+          fundido_por?: string | null
+          id?: string
+          ignorado_por?: string | null
+          log_fusao?: Json | null
+          motivo: string
+          similaridade?: number | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          campos_conflitantes?: Json | null
+          client_a_id?: string
+          client_b_id?: string
+          created_at?: string
+          fundido_por?: string | null
+          id?: string
+          ignorado_por?: string | null
+          log_fusao?: Json | null
+          motivo?: string
+          similaridade?: number | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_duplicates_client_a_id_fkey"
+            columns: ["client_a_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_duplicates_client_b_id_fkey"
+            columns: ["client_b_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_duplicates_fundido_por_fkey"
+            columns: ["fundido_por"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_duplicates_ignorado_por_fkey"
+            columns: ["ignorado_por"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_status_history: {
+        Row: {
+          alterado_por: string | null
+          client_id: string
+          created_at: string
+          id: string
+          observacao: string | null
+          status_anterior: string | null
+          status_novo: string
+        }
+        Insert: {
+          alterado_por?: string | null
+          client_id: string
+          created_at?: string
+          id?: string
+          observacao?: string | null
+          status_anterior?: string | null
+          status_novo: string
+        }
+        Update: {
+          alterado_por?: string | null
+          client_id?: string
+          created_at?: string
+          id?: string
+          observacao?: string | null
+          status_anterior?: string | null
+          status_novo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_status_history_alterado_por_fkey"
+            columns: ["alterado_por"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_status_history_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_tags: {
+        Row: {
+          aplicada_por: string | null
+          client_id: string
+          created_at: string
+          id: string
+          tag_id: string
+        }
+        Insert: {
+          aplicada_por?: string | null
+          client_id: string
+          created_at?: string
+          id?: string
+          tag_id: string
+        }
+        Update: {
+          aplicada_por?: string | null
+          client_id?: string
+          created_at?: string
+          id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_tags_aplicada_por_fkey"
+            columns: ["aplicada_por"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_tags_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          cidade: string | null
+          cnae: string | null
+          cpf_cnpj: string | null
+          created_at: string
+          data_abertura: string | null
+          email: string | null
+          endereco: string | null
+          estado: string | null
+          id: string
+          nome: string
+          nome_fantasia: string | null
           parceiro_id: string | null
           patrimonio_estimado: number | null
+          razao_social: string | null
           responsavel_id: string | null
+          situacao_cadastral: string | null
+          status: string | null
           telefone: string | null
+          telefone_whatsapp: string | null
           tipo_cliente: Database["public"]["Enums"]["client_tipo"]
         }
         Insert: {
+          cidade?: string | null
+          cnae?: string | null
           cpf_cnpj?: string | null
           created_at?: string
+          data_abertura?: string | null
           email?: string | null
+          endereco?: string | null
+          estado?: string | null
           id?: string
           nome: string
+          nome_fantasia?: string | null
           parceiro_id?: string | null
           patrimonio_estimado?: number | null
+          razao_social?: string | null
           responsavel_id?: string | null
+          situacao_cadastral?: string | null
+          status?: string | null
           telefone?: string | null
+          telefone_whatsapp?: string | null
           tipo_cliente?: Database["public"]["Enums"]["client_tipo"]
         }
         Update: {
+          cidade?: string | null
+          cnae?: string | null
           cpf_cnpj?: string | null
           created_at?: string
+          data_abertura?: string | null
           email?: string | null
+          endereco?: string | null
+          estado?: string | null
           id?: string
           nome?: string
+          nome_fantasia?: string | null
           parceiro_id?: string | null
           patrimonio_estimado?: number | null
+          razao_social?: string | null
           responsavel_id?: string | null
+          situacao_cadastral?: string | null
+          status?: string | null
           telefone?: string | null
+          telefone_whatsapp?: string | null
           tipo_cliente?: Database["public"]["Enums"]["client_tipo"]
         }
         Relationships: [
@@ -284,6 +638,52 @@ export type Database = {
           },
         ]
       }
+      partner_tags: {
+        Row: {
+          aplicada_por: string | null
+          created_at: string
+          id: string
+          partner_id: string
+          tag_id: string
+        }
+        Insert: {
+          aplicada_por?: string | null
+          created_at?: string
+          id?: string
+          partner_id: string
+          tag_id: string
+        }
+        Update: {
+          aplicada_por?: string | null
+          created_at?: string
+          id?: string
+          partner_id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_tags_aplicada_por_fkey"
+            columns: ["aplicada_por"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_tags_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       partners: {
         Row: {
           comissao: number | null
@@ -340,6 +740,9 @@ export type Database = {
           id: string
           nome: string
           ordem: number
+          percentual_progresso: number | null
+          probabilidade_fechamento: number | null
+          sla_dias: number | null
           tipo: Database["public"]["Enums"]["stage_tipo"]
         }
         Insert: {
@@ -350,6 +753,9 @@ export type Database = {
           id?: string
           nome: string
           ordem: number
+          percentual_progresso?: number | null
+          probabilidade_fechamento?: number | null
+          sla_dias?: number | null
           tipo?: Database["public"]["Enums"]["stage_tipo"]
         }
         Update: {
@@ -360,6 +766,9 @@ export type Database = {
           id?: string
           nome?: string
           ordem?: number
+          percentual_progresso?: number | null
+          probabilidade_fechamento?: number | null
+          sla_dias?: number | null
           tipo?: Database["public"]["Enums"]["stage_tipo"]
         }
         Relationships: [
@@ -403,6 +812,74 @@ export type Database = {
             columns: ["stage_id"]
             isOneToOne: false
             referencedRelation: "pipeline_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tags: {
+        Row: {
+          ativa: boolean | null
+          categoria: string | null
+          cor: string
+          created_at: string
+          id: string
+          nome: string
+          tipo: string | null
+        }
+        Insert: {
+          ativa?: boolean | null
+          categoria?: string | null
+          cor?: string
+          created_at?: string
+          id?: string
+          nome: string
+          tipo?: string | null
+        }
+        Update: {
+          ativa?: boolean | null
+          categoria?: string | null
+          cor?: string
+          created_at?: string
+          id?: string
+          nome?: string
+          tipo?: string | null
+        }
+        Relationships: []
+      }
+      user_calendar_settings: {
+        Row: {
+          created_at: string
+          google_calendar_id: string | null
+          google_refresh_token: string | null
+          id: string
+          sync_mode: string | null
+          ultima_sincronizacao: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          google_calendar_id?: string | null
+          google_refresh_token?: string | null
+          id?: string
+          sync_mode?: string | null
+          ultima_sincronizacao?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          google_calendar_id?: string | null
+          google_refresh_token?: string | null
+          id?: string
+          sync_mode?: string | null
+          ultima_sincronizacao?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_calendar_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "user_profiles"
             referencedColumns: ["id"]
           },
         ]

@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, KanbanSquare, Handshake, Users, Briefcase, ListChecks, UserCog, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, KanbanSquare, Handshake, Users, Briefcase, ListChecks, UserCog, Settings, LogOut, Copy } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import logo from "@/assets/lisboa-capital-logo.png";
 
@@ -10,6 +10,10 @@ const main = [
   { to: "/clients", label: "Clientes", icon: Users },
   { to: "/opportunities", label: "Oportunidades", icon: Briefcase },
   { to: "/activities", label: "Atividades", icon: ListChecks },
+] as const;
+
+const masterMain = [
+  { to: "/clients/duplicates", label: "Duplicidades", icon: Copy },
 ] as const;
 
 const masterOnly = [
@@ -57,6 +61,16 @@ export function AppSidebar() {
             <div className="mt-4 px-4 pb-1 pt-3 text-[10px] tracking-widest text-muted-foreground uppercase">
               Administração
             </div>
+            {masterMain.map((i) => {
+              const Icon = i.icon;
+              const active = path === i.to;
+              return (
+                <Link key={i.to} to={i.to} className={itemCls(active)}>
+                  <Icon className="w-4 h-4" />
+                  <span>{i.label}</span>
+                </Link>
+              );
+            })}
             {masterOnly.map((i) => {
               const Icon = i.icon;
               const active = path === i.to;
