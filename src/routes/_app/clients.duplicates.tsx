@@ -194,7 +194,7 @@ function MergeDialog({ dup, onClose }: { dup: any | null; onClose: () => void })
         merged[f] = src[f];
       }
       // 1. update A with chosen fields
-      await supabase.from("clients").update(merged).eq("id", a.id);
+      await supabase.from("clients").update(merged as any).eq("id", a.id);
       // 2. move relations from B to A
       await supabase.from("activities").update({ client_id: a.id }).eq("client_id", b.id);
       await supabase.from("client_documents").update({ client_id: a.id }).eq("client_id", b.id);
