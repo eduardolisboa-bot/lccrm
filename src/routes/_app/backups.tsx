@@ -9,8 +9,9 @@ export const Route = createFileRoute("/_app/backups")({
 function BackupsPage() {
   const { profile } = useAuth();
 
-  if (profile?.tipo_usuario !== "master") {
-    return <div className="p-8 text-center text-muted-foreground">Acesso restrito ao Master.</div>;
+  const tipo = profile?.tipo_usuario;
+  if (tipo !== "master" && tipo !== "interno") {
+    return <div className="p-8 text-center text-muted-foreground">Acesso restrito.</div>;
   }
 
   return (
