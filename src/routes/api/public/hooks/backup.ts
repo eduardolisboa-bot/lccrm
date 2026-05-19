@@ -1,6 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
+async function sha256Hex(bytes: Uint8Array): Promise<string> {
+  const buf = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function countRow(table: string): Promise<number> {
+  const { count, error } = await supabaseAdmin
+    .from(table)
+    .select("*", { count: "exact", head: true });
+  if (error) throw new Error(`count ${table}: ${error.message}`);
+  return count ?? 0;
+}
+
 const TABLES = [
   "clients",
   "partners",
