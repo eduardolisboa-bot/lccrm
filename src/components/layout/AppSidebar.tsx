@@ -29,6 +29,7 @@ export function AppSidebar() {
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
   const isMaster = profile?.tipo_usuario === "master";
+  const isInternal = isMaster || profile?.tipo_usuario === "interno";
 
   const itemCls = (active: boolean) =>
     `flex items-center gap-3 px-4 py-2.5 text-sm rounded-md transition-colors ${
