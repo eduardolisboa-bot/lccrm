@@ -120,7 +120,21 @@ export function ActivityFormDialog({
     } else {
       const { data, error: insErr } = await supabase.from("activities").insert(payload).select("id").single();
       error = insErr;
-      if (!error && data) await logAudit({ userId: profile?.id, acao: "create", entidade: "activity", entidadeId: data.id, novos: payload });
+      if (!error && data) {
+        await logAudit({ userId: profile?.id, acao: "create", entidade: "activity", entidadeId: data.id, novos: payload });
+        // Notify the responsible user (if different from creator)
+        if (form.responsavel_id && form.responsavel_id !== profile?.id) {
+          await supabase.from("notifications").insert({
+            user_id: form.responsavel_id,
+            titulo: "Nova atividade atribuída",
+            mensagem: `${form.titulo}${form.data_agendada ? " · " + new Date(form.data_agendada).toLocaleDateString("pt-BR") : ""}`,
+            tipo: "atividade",
+            link: "/activities",
+            entidade: "activity",
+            entidade_id: data.id,
+          });
+        }
+      }
     }
     setSaving(false);
     if (error) {
