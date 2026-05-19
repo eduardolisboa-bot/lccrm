@@ -21,6 +21,7 @@ import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppCrmRouteImport } from './routes/_app/crm'
 import { Route as AppCommissionsRouteImport } from './routes/_app/commissions'
 import { Route as AppClientsRouteImport } from './routes/_app/clients'
+import { Route as AppBackupsRouteImport } from './routes/_app/backups'
 import { Route as AppActivitiesRouteImport } from './routes/_app/activities'
 import { Route as AppPartnersIdRouteImport } from './routes/_app/partners.$id'
 import { Route as AppClientsDuplicatesRouteImport } from './routes/_app/clients.duplicates'
@@ -86,6 +87,11 @@ const AppClientsRoute = AppClientsRouteImport.update({
   path: '/clients',
   getParentRoute: () => AppRoute,
 } as any)
+const AppBackupsRoute = AppBackupsRouteImport.update({
+  id: '/backups',
+  path: '/backups',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppActivitiesRoute = AppActivitiesRouteImport.update({
   id: '/activities',
   path: '/activities',
@@ -117,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/activities': typeof AppActivitiesRoute
+  '/backups': typeof AppBackupsRoute
   '/clients': typeof AppClientsRouteWithChildren
   '/commissions': typeof AppCommissionsRoute
   '/crm': typeof AppCrmRoute
@@ -135,6 +142,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/activities': typeof AppActivitiesRoute
+  '/backups': typeof AppBackupsRoute
   '/clients': typeof AppClientsRouteWithChildren
   '/commissions': typeof AppCommissionsRoute
   '/crm': typeof AppCrmRoute
@@ -155,6 +163,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_app/activities': typeof AppActivitiesRoute
+  '/_app/backups': typeof AppBackupsRoute
   '/_app/clients': typeof AppClientsRouteWithChildren
   '/_app/commissions': typeof AppCommissionsRoute
   '/_app/crm': typeof AppCrmRoute
@@ -175,6 +184,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/activities'
+    | '/backups'
     | '/clients'
     | '/commissions'
     | '/crm'
@@ -193,6 +203,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/activities'
+    | '/backups'
     | '/clients'
     | '/commissions'
     | '/crm'
@@ -212,6 +223,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/_app/activities'
+    | '/_app/backups'
     | '/_app/clients'
     | '/_app/commissions'
     | '/_app/crm'
@@ -320,6 +332,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppClientsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/backups': {
+      id: '/_app/backups'
+      path: '/backups'
+      fullPath: '/backups'
+      preLoaderRoute: typeof AppBackupsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/activities': {
       id: '/_app/activities'
       path: '/activities'
@@ -386,6 +405,7 @@ const AppPartnersRouteWithChildren = AppPartnersRoute._addFileChildren(
 
 interface AppRouteChildren {
   AppActivitiesRoute: typeof AppActivitiesRoute
+  AppBackupsRoute: typeof AppBackupsRoute
   AppClientsRoute: typeof AppClientsRouteWithChildren
   AppCommissionsRoute: typeof AppCommissionsRoute
   AppCrmRoute: typeof AppCrmRoute
@@ -398,6 +418,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppActivitiesRoute: AppActivitiesRoute,
+  AppBackupsRoute: AppBackupsRoute,
   AppClientsRoute: AppClientsRouteWithChildren,
   AppCommissionsRoute: AppCommissionsRoute,
   AppCrmRoute: AppCrmRoute,
@@ -420,3 +441,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
