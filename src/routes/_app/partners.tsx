@@ -21,7 +21,7 @@ const PARTNER_TIPOS = ["assessor","advogado","contador","empresario","influencia
 
 function Partners() {
   const { profile } = useAuth();
-  const isMaster = profile?.tipo_usuario === "master";
+  const canCreate = profile?.tipo_usuario === "master" || profile?.tipo_usuario === "interno";
   const { data: partners = [] } = useQuery({
     queryKey: ["partners-list"],
     queryFn: async () => {
