@@ -42,6 +42,7 @@ type Row = {
 export function BackupsManager() {
   const qc = useQueryClient();
   const [running, setRunning] = useState(false);
+  const [restoreTarget, setRestoreTarget] = useState<Row | null>(null);
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["backup_history"],
