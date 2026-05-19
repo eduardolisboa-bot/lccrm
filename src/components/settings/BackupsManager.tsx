@@ -1,9 +1,15 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Download, Loader2, Play, ShieldCheck, AlertCircle, Clock } from "lucide-react";
+import { Download, Loader2, Play, ShieldCheck, AlertCircle, Clock, ShieldAlert, RotateCcw } from "lucide-react";
+import { verifyBackup, restoreBackup } from "@/lib/backup.functions";
 
 function fmtSize(b: number | null | undefined) {
   if (!b) return "—";
@@ -36,6 +42,7 @@ type Row = {
 export function BackupsManager() {
   const qc = useQueryClient();
   const [running, setRunning] = useState(false);
+  const [restoreTarget, setRestoreTarget] = useState<Row | null>(null);
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["backup_history"],
@@ -144,9 +151,14 @@ export function BackupsManager() {
                 </div>
                 <div className="text-xs text-muted-foreground whitespace-nowrap">{fmtSize(r.tamanho_bytes)}</div>
                 {r.status === "sucesso" && (
-                  <Button size="sm" variant="ghost" onClick={() => download(r.storage_path)}>
-                    <Download className="w-4 h-4" />
-                  </Button>
+                  <>
+                    <Button size="sm" variant="ghost" onClick={() => download(r.storage_path)} title="Baixar">
+                      <Download className="w-4 h-4" />
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => setRestoreTarget(r)} title="Restaurar" className="text-amber-500 hover:text-amber-400">
+                      <RotateCcw className="w-4 h-4" />
+                    </Button>
+                  </>
                 )}
               </div>
             ))}
@@ -157,6 +169,143 @@ export function BackupsManager() {
       <div className="text-[11px] text-muted-foreground">
         Os arquivos JSON ficam no bucket privado <code>backups</code> (acesso restrito a Master). Recomenda-se baixar periodicamente para arquivamento externo.
       </div>
+
+      <RestoreDialog target={restoreTarget} onClose={() => setRestoreTarget(null)} onDone={() => { setRestoreTarget(null); qc.invalidateQueries({ queryKey: ["backup_history"] }); }} />
     </div>
+  );
+}
+
+// ---------- Restore dialog ----------
+
+type VerifyResult = {
+  checksum_ok: boolean;
+  expected_checksum: string;
+  computed_checksum: string;
+  file_size: number;
+  generated_at: string;
+  dump_counts: Record<string, number>;
+  live_counts: Record<string, number>;
+  diffs: { table: string; backup: number; live: number; delta: number }[];
+  ready_to_restore: boolean;
+};
+
+function RestoreDialog({ target, onClose, onDone }: { target: Row | null; onClose: () => void; onDone: () => void }) {
+  const verifyFn = useServerFn(verifyBackup);
+  const restoreFn = useServerFn(restoreBackup);
+  const [verify, setVerify] = useState<VerifyResult | null>(null);
+  const [confirmText, setConfirmText] = useState("");
+  const [busy, setBusy] = useState<"verify" | "restore" | null>(null);
+
+  const runVerify = async () => {
+    if (!target) return;
+    setBusy("verify");
+    try {
+      const r = (await verifyFn({ data: { storage_path: target.storage_path } })) as VerifyResult;
+      setVerify(r);
+      if (!r.checksum_ok) toast.error("Checksum inválido — backup corrompido");
+      else toast.success("Backup íntegro e pronto para restauração");
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const runRestore = async () => {
+    if (!target) return;
+    if (confirmText !== "RESTAURAR") {
+      toast.error("Digite RESTAURAR para confirmar");
+      return;
+    }
+    setBusy("restore");
+    try {
+      const r = await restoreFn({ data: { storage_path: target.storage_path, confirm: "RESTAURAR" } });
+      if (r.success) toast.success(`Restauração concluída em ${(r.duration_ms / 1000).toFixed(1)}s`);
+      else toast.warning(`Restauração concluída com avisos (${r.mismatches.length} divergências, ${r.errors.length} erros)`);
+      onDone();
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  return (
+    <Dialog open={!!target} onOpenChange={(o) => { if (!o) { onClose(); setVerify(null); setConfirmText(""); } }}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2"><ShieldAlert className="w-4 h-4 text-amber-500" /> Restaurar backup</DialogTitle>
+          <DialogDescription className="text-xs">
+            Esta operação <strong>sobrescreve todos os dados atuais</strong> com o conteúdo deste backup. Recomenda-se gerar um backup manual antes.
+          </DialogDescription>
+        </DialogHeader>
+
+        {target && (
+          <div className="space-y-3 text-sm">
+            <div className="rounded border border-border bg-card p-3 space-y-1">
+              <div className="text-xs text-muted-foreground">Arquivo</div>
+              <div className="font-mono text-[11px] break-all">{target.storage_path}</div>
+              <div className="text-xs text-muted-foreground mt-1">Gerado em {fmtDate(target.created_at)} · {fmtSize(target.tamanho_bytes)}</div>
+            </div>
+
+            {!verify ? (
+              <Button onClick={runVerify} disabled={busy === "verify"} variant="outline" className="w-full">
+                {busy === "verify" ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ShieldCheck className="w-4 h-4 mr-2" />}
+                Verificar checksum e contagens
+              </Button>
+            ) : (
+              <div className="rounded border border-border p-3 space-y-2 text-xs">
+                <div className="flex items-center gap-2">
+                  <span className={verify.checksum_ok ? "text-green-500" : "text-red-500"}>●</span>
+                  <span>Checksum SHA-256: {verify.checksum_ok ? "VÁLIDO" : "INVÁLIDO"}</span>
+                </div>
+                <div className="font-mono text-[10px] text-muted-foreground break-all">
+                  esperado: {verify.expected_checksum}<br />obtido:   {verify.computed_checksum}
+                </div>
+                <div className="border-t border-border pt-2 mt-2">
+                  <div className="font-medium mb-1">Contagens (backup → atual)</div>
+                  {verify.diffs.length === 0 ? (
+                    <div className="text-green-500">Nenhuma divergência — banco atual coincide com o backup.</div>
+                  ) : (
+                    <div className="max-h-40 overflow-y-auto space-y-0.5">
+                      {verify.diffs.map((d) => (
+                        <div key={d.table} className="flex justify-between gap-3">
+                          <span className="text-muted-foreground">{d.table}</span>
+                          <span className={d.delta > 0 ? "text-blue-400" : "text-amber-400"}>
+                            {d.backup} → {d.live} ({d.delta > 0 ? "+" : ""}{d.delta * -1})
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {verify?.ready_to_restore && (
+              <div className="space-y-2">
+                <div className="text-xs text-amber-500 flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                  <span>Digite <code className="font-mono">RESTAURAR</code> abaixo para confirmar a sobrescrita de todos os dados.</span>
+                </div>
+                <Input value={confirmText} onChange={(e) => setConfirmText(e.target.value)} placeholder="RESTAURAR" autoComplete="off" />
+              </div>
+            )}
+          </div>
+        )}
+
+        <DialogFooter>
+          <Button variant="ghost" onClick={onClose} disabled={busy !== null}>Cancelar</Button>
+          <Button
+            onClick={runRestore}
+            disabled={busy !== null || !verify?.ready_to_restore || confirmText !== "RESTAURAR"}
+            className="bg-amber-600 hover:bg-amber-700 text-white"
+          >
+            {busy === "restore" ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RotateCcw className="w-4 h-4 mr-2" />}
+            Restaurar agora
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
