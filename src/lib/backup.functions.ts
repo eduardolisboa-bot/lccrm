@@ -42,7 +42,7 @@ async function sha256Hex(bytes: Uint8Array): Promise<string> {
   return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-async function assertMaster(userId: string) {
+async function assertInternal(userId: string) {
   const { data, error } = await supabaseAdmin
     .from("user_profiles")
     .select("tipo_usuario")
@@ -50,7 +50,9 @@ async function assertMaster(userId: string) {
     .eq("status", "ativo")
     .maybeSingle();
   if (error) throw new Error("Falha ao verificar permissão: " + error.message);
-  if (!data || data.tipo_usuario !== "master") throw new Error("Acesso restrito ao Master");
+  if (!data || (data.tipo_usuario !== "master" && data.tipo_usuario !== "interno")) {
+    throw new Error("Acesso restrito a usuários internos");
+  }
 }
 
 async function loadBackup(storagePath: string): Promise<{
@@ -80,7 +82,7 @@ export const verifyBackup = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { storage_path: string }) => input)
   .handler(async ({ data, context }) => {
-    await assertMaster(context.userId);
+    await assertInternal(context.userId);
     const { envelope, computedChecksum, fileSize } = await loadBackup(data.storage_path);
 
     const checksumOk = computedChecksum === envelope.checksum_sha256;
@@ -119,7 +121,7 @@ export const restoreBackup = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { storage_path: string; confirm: string }) => input)
   .handler(async ({ data, context }) => {
-    await assertMaster(context.userId);
+    await assertInternal(context.userId);
     if (data.confirm !== "RESTAURAR") {
       throw new Error("Confirmação inválida. Digite RESTAURAR para confirmar.");
     }
