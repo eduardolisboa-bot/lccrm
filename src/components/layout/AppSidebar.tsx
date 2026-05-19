@@ -11,7 +11,7 @@ const main = [
   { to: "/clients", label: "Clientes", icon: Users },
   { to: "/opportunities", label: "Oportunidades", icon: Briefcase },
   { to: "/activities", label: "Atividades", icon: ListChecks },
-  { to: "/backups", label: "Backups", icon: DatabaseBackup, masterOnly: true },
+  { to: "/backups", label: "Backups", icon: DatabaseBackup, internalOnly: true },
 ] as const;
 
 const masterMain = [
@@ -29,6 +29,7 @@ export function AppSidebar() {
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
   const isMaster = profile?.tipo_usuario === "master";
+  const isInternal = isMaster || profile?.tipo_usuario === "interno";
 
   const itemCls = (active: boolean) =>
     `flex items-center gap-3 px-4 py-2.5 text-sm rounded-md transition-colors ${
@@ -50,7 +51,7 @@ export function AppSidebar() {
       </div>
 
       <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-0.5 scrollbar-slim">
-        {main.filter((i) => !("masterOnly" in i) || isMaster).map((i) => {
+        {main.filter((i) => !("internalOnly" in i) || isInternal).map((i) => {
           const Icon = i.icon;
           const active = path === i.to || path.startsWith(i.to + "/");
           return (
