@@ -25,6 +25,12 @@ type Row = {
   tamanho_bytes: number | null;
   tabelas: Record<string, number> | null;
   erro: string | null;
+  checksum_sha256: string | null;
+  validacao: {
+    checksum_ok?: boolean;
+    counts_match?: boolean;
+    mismatches?: { table: string; dump: number; live: number }[];
+  } | null;
 };
 
 export function BackupsManager() {
@@ -113,10 +119,23 @@ export function BackupsManager() {
               <div key={r.id} className="px-4 py-3 flex items-center gap-3 text-sm">
                 <div className={`h-2 w-2 rounded-full ${r.status === "sucesso" ? "bg-green-500" : "bg-red-500"}`} />
                 <div className="flex-1 min-w-0">
-                  <div className="truncate">
-                    {fmtDate(r.created_at)} · <span className="text-muted-foreground">{r.tipo}</span>
+                  <div className="truncate flex items-center gap-2">
+                    <span>{fmtDate(r.created_at)} · <span className="text-muted-foreground">{r.tipo}</span></span>
+                    {r.validacao?.checksum_ok && (
+                      <span className="text-[10px] uppercase tracking-wider text-green-500 border border-green-500/30 bg-green-500/10 rounded px-1.5 py-0.5">checksum ok</span>
+                    )}
+                    {r.validacao && r.validacao.counts_match === false && (
+                      <span className="text-[10px] uppercase tracking-wider text-amber-500 border border-amber-500/30 bg-amber-500/10 rounded px-1.5 py-0.5" title={JSON.stringify(r.validacao.mismatches)}>
+                        contagens divergentes
+                      </span>
+                    )}
                   </div>
                   <div className="text-[11px] text-muted-foreground truncate">{r.storage_path}</div>
+                  {r.checksum_sha256 && (
+                    <div className="text-[10px] text-muted-foreground/70 font-mono truncate" title={r.checksum_sha256}>
+                      sha256: {r.checksum_sha256.slice(0, 16)}…{r.checksum_sha256.slice(-8)}
+                    </div>
+                  )}
                   {r.erro && (
                     <div className="text-[11px] text-red-400 flex items-center gap-1 mt-0.5">
                       <AlertCircle className="w-3 h-3" /> {r.erro}
