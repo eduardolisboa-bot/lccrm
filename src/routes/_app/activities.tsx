@@ -14,9 +14,14 @@ import { ActivityFormDialog, type ActivityRecord } from "@/components/activities
 import { toast } from "sonner";
 import { usePermissions } from "@/hooks/usePermissions";
 import { Calendar, dateFnsLocalizer, type View } from "react-big-calendar";
+import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
 import { format, parse, startOfWeek, getDay, isBefore, isToday, startOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { nextRecurrenceDate } from "@/lib/recurrence";
 import "react-big-calendar/lib/css/react-big-calendar.css";
+import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
+
+const DnDCalendar = withDragAndDrop(Calendar as any);
 
 export const Route = createFileRoute("/_app/activities")({
   component: ActivitiesPage,
