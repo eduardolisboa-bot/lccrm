@@ -17,13 +17,15 @@ function AppLayout() {
     if (!loading && !user) navigate({ to: "/login" });
   }, [user, loading, navigate]);
 
-  if (loading || !user) {
+  if (loading && !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-muted-foreground text-sm">Carregando…</div>
       </div>
     );
   }
+
+  if (!user) return null;
 
   return (
     <FunnelProvider>
