@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { FunnelProvider } from "@/lib/funnel-context";
 import { AppSidebar } from "@/components/layout/AppSidebar";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export const Route = createFileRoute("/_app")({
   component: AppLayout,
