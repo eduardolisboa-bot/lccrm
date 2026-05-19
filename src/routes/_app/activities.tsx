@@ -268,7 +268,7 @@ function ActivitiesPage() {
 
         <TabsContent value="calendario" className="mt-6">
           <div className="bg-card border rounded-xl p-4 h-[700px]">
-            <Calendar
+            <DnDCalendar
               localizer={localizer}
               events={events}
               startAccessor="start"
@@ -285,6 +285,10 @@ function ActivitiesPage() {
                 date: "Data", time: "Hora", event: "Evento", noEventsInRange: "Sem atividades neste período",
               }}
               onSelectEvent={(e: any) => openEdit(e.resource)}
+              onEventDrop={handleEventDrop}
+              onEventResize={handleEventDrop}
+              resizable
+              draggableAccessor={() => perms.canCreateActivities}
               eventPropGetter={(e: any) => {
                 const p = e.resource?.prioridade;
                 const bg = p === "alta" ? "hsl(0 70% 50%)" : p === "baixa" ? "hsl(150 60% 40%)" : "hsl(var(--primary))";
@@ -292,6 +296,7 @@ function ActivitiesPage() {
               }}
               style={{ height: "100%" }}
             />
+
           </div>
         </TabsContent>
       </Tabs>
