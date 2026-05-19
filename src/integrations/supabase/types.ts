@@ -159,6 +159,7 @@ export type Database = {
       }
       backup_history: {
         Row: {
+          checksum_sha256: string | null
           created_at: string
           erro: string | null
           id: string
@@ -168,8 +169,10 @@ export type Database = {
           tabelas: Json | null
           tamanho_bytes: number | null
           tipo: string
+          validacao: Json | null
         }
         Insert: {
+          checksum_sha256?: string | null
           created_at?: string
           erro?: string | null
           id?: string
@@ -179,8 +182,10 @@ export type Database = {
           tabelas?: Json | null
           tamanho_bytes?: number | null
           tipo?: string
+          validacao?: Json | null
         }
         Update: {
+          checksum_sha256?: string | null
           created_at?: string
           erro?: string | null
           id?: string
@@ -190,6 +195,7 @@ export type Database = {
           tabelas?: Json | null
           tamanho_bytes?: number | null
           tipo?: string
+          validacao?: Json | null
         }
         Relationships: []
       }
