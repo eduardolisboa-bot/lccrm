@@ -1,6 +1,7 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, KanbanSquare, Handshake, Users, Briefcase, ListChecks, UserCog, Settings, LogOut, Copy } from "lucide-react";
+import { LayoutDashboard, KanbanSquare, Handshake, Users, Briefcase, ListChecks, UserCog, Settings, LogOut, Copy, DollarSign } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { NotificationsBell } from "@/components/NotificationsBell";
 import logo from "@/assets/lisboa-capital-logo.png";
 
 const main = [
@@ -14,6 +15,7 @@ const main = [
 
 const masterMain = [
   { to: "/clients/duplicates", label: "Duplicidades", icon: Copy },
+  { to: "/commissions", label: "Comissões", icon: DollarSign },
 ] as const;
 
 const masterOnly = [
