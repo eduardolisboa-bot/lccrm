@@ -198,7 +198,7 @@ export const restoreBackup = createServerFn({ method: "POST" })
           live_counts: liveCounts,
           mismatches,
           errors,
-        } as unknown as Record<string, unknown>,
+        } as never,
       });
     } catch {}
 
