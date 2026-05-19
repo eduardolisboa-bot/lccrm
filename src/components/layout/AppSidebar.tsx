@@ -50,7 +50,7 @@ export function AppSidebar() {
       </div>
 
       <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-0.5 scrollbar-slim">
-        {main.filter((i) => !i.masterOnly || isMaster).map((i) => {
+        {main.filter((i) => !("masterOnly" in i) || isMaster).map((i) => {
           const Icon = i.icon;
           const active = path === i.to || path.startsWith(i.to + "/");
           return (
