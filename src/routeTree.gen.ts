@@ -19,6 +19,7 @@ import { Route as AppPartnersRouteImport } from './routes/_app/partners'
 import { Route as AppOpportunitiesRouteImport } from './routes/_app/opportunities'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppCrmRouteImport } from './routes/_app/crm'
+import { Route as AppCommissionsRouteImport } from './routes/_app/commissions'
 import { Route as AppClientsRouteImport } from './routes/_app/clients'
 import { Route as AppActivitiesRouteImport } from './routes/_app/activities'
 import { Route as AppPartnersIdRouteImport } from './routes/_app/partners.$id'
@@ -74,6 +75,11 @@ const AppCrmRoute = AppCrmRouteImport.update({
   path: '/crm',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCommissionsRoute = AppCommissionsRouteImport.update({
+  id: '/commissions',
+  path: '/commissions',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppClientsRoute = AppClientsRouteImport.update({
   id: '/clients',
   path: '/clients',
@@ -106,6 +112,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/activities': typeof AppActivitiesRoute
   '/clients': typeof AppClientsRouteWithChildren
+  '/commissions': typeof AppCommissionsRoute
   '/crm': typeof AppCrmRoute
   '/dashboard': typeof AppDashboardRoute
   '/opportunities': typeof AppOpportunitiesRoute
@@ -122,6 +129,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/activities': typeof AppActivitiesRoute
   '/clients': typeof AppClientsRouteWithChildren
+  '/commissions': typeof AppCommissionsRoute
   '/crm': typeof AppCrmRoute
   '/dashboard': typeof AppDashboardRoute
   '/opportunities': typeof AppOpportunitiesRoute
@@ -140,6 +148,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_app/activities': typeof AppActivitiesRoute
   '/_app/clients': typeof AppClientsRouteWithChildren
+  '/_app/commissions': typeof AppCommissionsRoute
   '/_app/crm': typeof AppCrmRoute
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/opportunities': typeof AppOpportunitiesRoute
@@ -158,6 +167,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/activities'
     | '/clients'
+    | '/commissions'
     | '/crm'
     | '/dashboard'
     | '/opportunities'
@@ -174,6 +184,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/activities'
     | '/clients'
+    | '/commissions'
     | '/crm'
     | '/dashboard'
     | '/opportunities'
@@ -191,6 +202,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_app/activities'
     | '/_app/clients'
+    | '/_app/commissions'
     | '/_app/crm'
     | '/_app/dashboard'
     | '/_app/opportunities'
@@ -281,6 +293,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCrmRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/commissions': {
+      id: '/_app/commissions'
+      path: '/commissions'
+      fullPath: '/commissions'
+      preLoaderRoute: typeof AppCommissionsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/clients': {
       id: '/_app/clients'
       path: '/clients'
@@ -348,6 +367,7 @@ const AppPartnersRouteWithChildren = AppPartnersRoute._addFileChildren(
 interface AppRouteChildren {
   AppActivitiesRoute: typeof AppActivitiesRoute
   AppClientsRoute: typeof AppClientsRouteWithChildren
+  AppCommissionsRoute: typeof AppCommissionsRoute
   AppCrmRoute: typeof AppCrmRoute
   AppDashboardRoute: typeof AppDashboardRoute
   AppOpportunitiesRoute: typeof AppOpportunitiesRoute
@@ -359,6 +379,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppActivitiesRoute: AppActivitiesRoute,
   AppClientsRoute: AppClientsRouteWithChildren,
+  AppCommissionsRoute: AppCommissionsRoute,
   AppCrmRoute: AppCrmRoute,
   AppDashboardRoute: AppDashboardRoute,
   AppOpportunitiesRoute: AppOpportunitiesRoute,
@@ -378,13 +399,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

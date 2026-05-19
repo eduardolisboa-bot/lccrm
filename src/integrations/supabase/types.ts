@@ -477,6 +477,45 @@ export type Database = {
           },
         ]
       }
+      commission_rules: {
+        Row: {
+          ativa: boolean
+          created_at: string
+          id: string
+          nome: string
+          parceiro_id: string | null
+          percentual: number
+          produto: string | null
+          updated_at: string
+          valor_maximo: number | null
+          valor_minimo: number | null
+        }
+        Insert: {
+          ativa?: boolean
+          created_at?: string
+          id?: string
+          nome: string
+          parceiro_id?: string | null
+          percentual?: number
+          produto?: string | null
+          updated_at?: string
+          valor_maximo?: number | null
+          valor_minimo?: number | null
+        }
+        Update: {
+          ativa?: boolean
+          created_at?: string
+          id?: string
+          nome?: string
+          parceiro_id?: string | null
+          percentual?: number
+          produto?: string | null
+          updated_at?: string
+          valor_maximo?: number | null
+          valor_minimo?: number | null
+        }
+        Relationships: []
+      }
       funnel_goals: {
         Row: {
           created_at: string
@@ -539,6 +578,45 @@ export type Database = {
           id?: string
           nome?: string
           ordem?: number
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          entidade: string | null
+          entidade_id: string | null
+          id: string
+          lida: boolean
+          link: string | null
+          mensagem: string | null
+          tipo: string | null
+          titulo: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entidade?: string | null
+          entidade_id?: string | null
+          id?: string
+          lida?: boolean
+          link?: string | null
+          mensagem?: string | null
+          tipo?: string | null
+          titulo: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entidade?: string | null
+          entidade_id?: string | null
+          id?: string
+          lida?: boolean
+          link?: string | null
+          mensagem?: string | null
+          tipo?: string | null
+          titulo?: string
+          user_id?: string
         }
         Relationships: []
       }
