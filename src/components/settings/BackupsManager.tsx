@@ -169,7 +169,7 @@ export function BackupsManager() {
       </div>
 
       <div className="text-[11px] text-muted-foreground">
-        Os arquivos JSON ficam no bucket privado <code>backups</code> (acesso restrito a Master). Recomenda-se baixar periodicamente para arquivamento externo.
+        Os arquivos JSON ficam no bucket privado <code>backups</code> (acesso restrito a usuários internos). Recomenda-se baixar periodicamente para arquivamento externo.
       </div>
 
       <RestoreDialog target={restoreTarget} onClose={() => setRestoreTarget(null)} onDone={() => { setRestoreTarget(null); qc.invalidateQueries({ queryKey: ["backup_history"] }); }} />

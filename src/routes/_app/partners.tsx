@@ -20,8 +20,8 @@ export const Route = createFileRoute("/_app/partners")({
 const PARTNER_TIPOS = ["assessor","advogado","contador","empresario","influenciador","family_office","outro"];
 
 function Partners() {
-  const { profile } = useAuth();
-  const canCreate = profile?.tipo_usuario === "master" || profile?.tipo_usuario === "interno";
+  const { profile, loading } = useAuth();
+  const canCreate = !loading && (profile?.tipo_usuario === "master" || profile?.tipo_usuario === "interno");
   const { data: partners = [] } = useQuery({
     queryKey: ["partners-list"],
     queryFn: async () => {
@@ -67,7 +67,11 @@ function Partners() {
           <h1 className="text-3xl font-serif">Parceiros</h1>
           <p className="text-sm text-muted-foreground mt-1">{filtered.length} de {partners.length} parceiros</p>
         </div>
-        {canCreate && <NewPartner />}
+        {loading ? (
+          <Button disabled variant="outline">Carregando permissões…</Button>
+        ) : canCreate ? (
+          <NewPartner />
+        ) : null}
       </div>
 
       <div className="flex flex-wrap gap-2 items-center">

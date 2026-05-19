@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-async function isMasterAuthRequest(request: Request): Promise<boolean> {
+async function isInternalAuthRequest(request: Request): Promise<boolean> {
   const header = request.headers.get("authorization");
   const token = header?.replace(/^Bearer\s+/i, "");
   if (!token) return false;
@@ -17,7 +17,7 @@ async function isMasterAuthRequest(request: Request): Promise<boolean> {
     .maybeSingle();
 
   if (profileError) throw new Error("Falha ao verificar permissão: " + profileError.message);
-  return profile?.tipo_usuario === "master";
+  return profile?.tipo_usuario === "master" || profile?.tipo_usuario === "interno";
 }
 
 function hasCronApiKey(request: Request): boolean {
@@ -187,8 +187,8 @@ export const Route = createFileRoute("/api/public/hooks/backup")({
         } catch {}
 
         try {
-          if (tipo === "manual" && !(await isMasterAuthRequest(request))) {
-            return new Response(JSON.stringify({ success: false, error: "Acesso restrito ao Master" }), {
+          if (tipo === "manual" && !(await isInternalAuthRequest(request))) {
+            return new Response(JSON.stringify({ success: false, error: "Acesso restrito a usuários internos" }), {
               status: 403,
               headers: { "Content-Type": "application/json" },
             });
