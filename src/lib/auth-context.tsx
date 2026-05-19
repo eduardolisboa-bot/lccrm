@@ -38,7 +38,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .select("*")
       .eq("auth_user_id", uid)
       .maybeSingle();
-    setProfile((data as UserProfile) ?? null);
+    const nextProfile = (data as UserProfile) ?? null;
+    setProfile(nextProfile);
+    return nextProfile;
   };
 
   useEffect(() => {
@@ -46,9 +48,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(sess);
       setUser(sess?.user ?? null);
       if (sess?.user) {
-        setTimeout(() => loadProfile(sess.user.id), 0);
+        setLoading(true);
+        setTimeout(() => {
+          loadProfile(sess.user.id).finally(() => setLoading(false));
+        }, 0);
       } else {
         setProfile(null);
+        setLoading(false);
       }
     });
     supabase.auth.getSession().then(({ data }) => {
@@ -66,7 +72,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     profile,
     loading,
     signIn: async (email, password) => {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (!error && data.user) await loadProfile(data.user.id);
       return { error: error?.message ?? null };
     },
     signOut: async () => {
