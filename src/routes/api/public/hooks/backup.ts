@@ -20,6 +20,11 @@ async function isMasterAuthRequest(request: Request): Promise<boolean> {
   return profile?.tipo_usuario === "master";
 }
 
+function hasCronApiKey(request: Request): boolean {
+  const expected = process.env.SUPABASE_PUBLISHABLE_KEY;
+  return Boolean(expected && request.headers.get("apikey") === expected);
+}
+
 async function sha256Hex(bytes: Uint8Array): Promise<string> {
   const ab = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
   const buf = await crypto.subtle.digest("SHA-256", ab);
@@ -185,6 +190,13 @@ export const Route = createFileRoute("/api/public/hooks/backup")({
           if (tipo === "manual" && !(await isMasterAuthRequest(request))) {
             return new Response(JSON.stringify({ success: false, error: "Acesso restrito ao Master" }), {
               status: 403,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+
+          if (tipo === "automatico" && !hasCronApiKey(request)) {
+            return new Response(JSON.stringify({ success: false, error: "Chave de agendamento inválida" }), {
+              status: 401,
               headers: { "Content-Type": "application/json" },
             });
           }
