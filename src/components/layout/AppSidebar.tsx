@@ -39,7 +39,9 @@ export function AppSidebar() {
   return (
     <aside className="w-60 shrink-0 bg-card border-r border-border flex flex-col h-screen sticky top-0">
       <div className="px-5 pt-6 pb-4 flex items-center gap-3 border-b border-border">
-        <img src={logo} alt="LC" className="w-10 h-10 object-contain" />
+        <div className="logo-plate">
+          <img src={logo} alt="LC" className="w-10 h-10 object-contain" />
+        </div>
         <div>
           <div className="font-serif text-base leading-tight">Lisboa Capital</div>
           <div className="text-[10px] tracking-widest text-primary/70">PRIVATE</div>
