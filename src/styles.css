@@ -38,7 +38,7 @@
   --radius: 0.625rem;
 }
 
-:root {
+:root, .dark {
   --bg-base: #0A0C10;
   --bg-surface: #111318;
   --bg-elevated: #1A1D24;
@@ -52,6 +52,24 @@
   --danger: #EF4444;
   --warning: #F59E0B;
   --info: #3B82F6;
+  --logo-bg: #F5F1E6;
+}
+
+.light {
+  --bg-base: #F7F6F2;
+  --bg-surface: #FFFFFF;
+  --bg-elevated: #F0EDE4;
+  --border-subtle: rgba(15, 17, 22, 0.08);
+  --accent-gold: #8E7232;
+  --accent-gold-muted: rgba(142, 114, 50, 0.10);
+  --text-primary: #14171C;
+  --text-secondary: #4A5568;
+  --text-muted: #8B949E;
+  --success: #16A34A;
+  --danger: #DC2626;
+  --warning: #D97706;
+  --info: #2563EB;
+  --logo-bg: #FFFFFF;
 }
 
 @layer base {
@@ -68,7 +86,7 @@
 .font-serif { font-family: "Cormorant Garamond", Georgia, serif; }
 
 .scrollbar-slim::-webkit-scrollbar { width: 6px; height: 6px; }
-.scrollbar-slim::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+.scrollbar-slim::-webkit-scrollbar-thumb { background: rgba(127,127,127,0.20); border-radius: 3px; }
 
 .gold-gradient-text {
   background: linear-gradient(135deg, #E6C76A 0%, #C9A84C 60%, #8E7232 100%);
@@ -81,5 +99,12 @@
   background-image:
     radial-gradient(at 20% 10%, rgba(201,168,76,0.06) 0, transparent 40%),
     radial-gradient(at 80% 90%, rgba(59,130,246,0.04) 0, transparent 40%),
-    linear-gradient(135deg, #0A0C10 0%, #141820 100%);
+    linear-gradient(135deg, var(--bg-base) 0%, var(--bg-surface) 100%);
+}
+
+.logo-plate {
+  background: var(--logo-bg);
+  border-radius: 10px;
+  padding: 4px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.12), inset 0 0 0 1px rgba(201,168,76,0.18);
 }

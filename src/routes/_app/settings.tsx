@@ -13,6 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
 import { fmtBRL } from "@/lib/format";
+import { BackupsManager } from "@/components/settings/BackupsManager";
 
 export const Route = createFileRoute("/_app/settings")({
   component: SettingsPage,
@@ -38,9 +39,11 @@ function SettingsPage() {
         <TabsList>
           <TabsTrigger value="funis">Funis & Etapas</TabsTrigger>
           <TabsTrigger value="metas">Metas</TabsTrigger>
+          <TabsTrigger value="backups">Backups</TabsTrigger>
         </TabsList>
         <TabsContent value="funis" className="mt-4 space-y-6"><FunisManager /></TabsContent>
         <TabsContent value="metas" className="mt-4 space-y-6"><MetasManager /></TabsContent>
+        <TabsContent value="backups" className="mt-4 space-y-6"><BackupsManager /></TabsContent>
       </Tabs>
     </div>
   );
