@@ -61,9 +61,10 @@ export function BackupsManager() {
     mutationFn: async () => {
       setRunning(true);
       const { data: sess } = await supabase.auth.getSession();
+      const token = sess.session?.access_token;
       const res = await fetch("/api/public/hooks/backup", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({ tipo: "manual", iniciado_por: sess.session?.user?.id }),
       });
       const json = await res.json();
@@ -94,7 +95,7 @@ export function BackupsManager() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div className="rounded-lg border border-border bg-card p-4">
           <div className="flex items-center gap-2 text-xs text-muted-foreground"><Clock className="w-3.5 h-3.5" /> Agendamento</div>
-          <div className="mt-1 text-sm">Diário · 03:00 UTC</div>
+          <div className="mt-1 text-sm">Automático · a cada 15 horas</div>
           <div className="text-[11px] text-muted-foreground mt-1">Bucket privado <code>backups</code></div>
         </div>
         <div className="rounded-lg border border-border bg-card p-4">
@@ -155,8 +156,9 @@ export function BackupsManager() {
                     <Button size="sm" variant="ghost" onClick={() => download(r.storage_path)} title="Baixar">
                       <Download className="w-4 h-4" />
                     </Button>
-                    <Button size="sm" variant="ghost" onClick={() => setRestoreTarget(r)} title="Restaurar" className="text-amber-500 hover:text-amber-400">
-                      <RotateCcw className="w-4 h-4" />
+                    <Button size="sm" variant="ghost" onClick={() => setRestoreTarget(r)} title="Restaurar backup anterior" className="text-amber-500 hover:text-amber-400">
+                      <RotateCcw className="w-4 h-4 mr-1" />
+                      Restaurar
                     </Button>
                   </>
                 )}
