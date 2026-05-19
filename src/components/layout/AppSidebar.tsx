@@ -11,7 +11,7 @@ const main = [
   { to: "/clients", label: "Clientes", icon: Users },
   { to: "/opportunities", label: "Oportunidades", icon: Briefcase },
   { to: "/activities", label: "Atividades", icon: ListChecks },
-  { to: "/backups", label: "Backups", icon: DatabaseBackup, masterOnly: true },
+  { to: "/backups", label: "Backups", icon: DatabaseBackup, internalOnly: true },
 ] as const;
 
 const masterMain = [
