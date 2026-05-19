@@ -2,18 +2,19 @@ import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 async function sha256Hex(bytes: Uint8Array): Promise<string> {
-  const buf = await crypto.subtle.digest("SHA-256", bytes);
+  const ab = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
+  const buf = await crypto.subtle.digest("SHA-256", ab);
   return Array.from(new Uint8Array(buf))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 }
 
 async function countRow(table: string): Promise<number> {
-  const { count, error } = await supabaseAdmin
-    .from(table)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { count, error } = await (supabaseAdmin.from(table as never) as any)
     .select("*", { count: "exact", head: true });
   if (error) throw new Error(`count ${table}: ${error.message}`);
-  return count ?? 0;
+  return (count as number) ?? 0;
 }
 
 const TABLES = [
@@ -62,14 +63,21 @@ async function dumpAll(tipo: "automatico" | "manual", iniciadoPor: string | null
     counts[t] = all.length;
   }
 
-  const payload = {
+  // Pre-checksum payload (without the checksum field itself)
+  const innerPayload = {
     version: 1,
     generated_at: started.toISOString(),
     project: "lisboa-capital-crm",
     counts,
     data: dump,
   };
-  const body = JSON.stringify(payload);
+  const inner = JSON.stringify(innerPayload);
+  const innerBytes = new TextEncoder().encode(inner);
+  const checksum = await sha256Hex(innerBytes);
+
+  // Final envelope embeds the checksum that covers innerPayload
+  const envelope = { checksum_sha256: checksum, payload: innerPayload };
+  const body = JSON.stringify(envelope);
   const buf = new TextEncoder().encode(body);
 
   const yyyy = started.getUTCFullYear();
@@ -84,16 +92,62 @@ async function dumpAll(tipo: "automatico" | "manual", iniciadoPor: string | null
     .upload(path, buf, { contentType: "application/json", upsert: false });
   if (upErr) throw new Error(`upload: ${upErr.message}`);
 
+  // ---- Post-backup validation ----
+  // 1) Re-download the uploaded file and re-hash it
+  const { data: dl, error: dlErr } = await supabaseAdmin.storage.from("backups").download(path);
+  if (dlErr || !dl) throw new Error(`download check: ${dlErr?.message ?? "no data"}`);
+  const downloadedBytes = new Uint8Array(await dl.arrayBuffer());
+  let parsedOk = true;
+  let reChecksum = "";
+  let innerReHash = "";
+  try {
+    const parsed = JSON.parse(new TextDecoder().decode(downloadedBytes)) as {
+      checksum_sha256: string;
+      payload: unknown;
+    };
+    reChecksum = parsed.checksum_sha256;
+    innerReHash = await sha256Hex(new TextEncoder().encode(JSON.stringify(parsed.payload)));
+  } catch {
+    parsedOk = false;
+  }
+  const checksumOk = parsedOk && reChecksum === checksum && innerReHash === checksum;
+
+  // 2) Re-count each table and compare with dump counts
+  const liveCounts: Record<string, number> = {};
+  const mismatches: { table: string; dump: number; live: number }[] = [];
+  for (const t of TABLES) {
+    const live = await countRow(t);
+    liveCounts[t] = live;
+    if (live !== counts[t]) mismatches.push({ table: t, dump: counts[t], live });
+  }
+
+  const validacao = {
+    checksum_ok: checksumOk,
+    parse_ok: parsedOk,
+    file_size_ok: downloadedBytes.byteLength === buf.byteLength,
+    counts_match: mismatches.length === 0,
+    mismatches,
+    live_counts: liveCounts,
+    checked_at: new Date().toISOString(),
+  };
+
+  const valid = checksumOk && validacao.file_size_ok; // count mismatches are warnings, not failures
+
   await supabaseAdmin.from("backup_history").insert({
     storage_path: path,
     tipo,
-    status: "sucesso",
+    status: valid ? "sucesso" : "erro",
     tamanho_bytes: buf.byteLength,
     tabelas: counts,
+    checksum_sha256: checksum,
+    validacao,
+    erro: valid ? null : "Validação pós-backup falhou (ver campo validacao)",
     iniciado_por: iniciadoPor,
   });
 
-  return { path, size: buf.byteLength, counts };
+  if (!valid) throw new Error("Validação pós-backup falhou: " + JSON.stringify(validacao));
+
+  return { path, size: buf.byteLength, counts, checksum_sha256: checksum, validacao };
 }
 
 export const Route = createFileRoute("/api/public/hooks/backup")({
