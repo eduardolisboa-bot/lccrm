@@ -44,13 +44,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    let alive = true;
+    let profileTimer: ReturnType<typeof setTimeout> | undefined;
+    const finish = () => {
+      if (alive) setLoading(false);
+    };
+
     const { data: sub } = supabase.auth.onAuthStateChange((_event, sess) => {
+      if (!alive) return;
       setSession(sess);
       setUser(sess?.user ?? null);
       if (sess?.user) {
         setLoading(true);
-        setTimeout(() => {
-          loadProfile(sess.user.id).finally(() => setLoading(false));
+        if (profileTimer) clearTimeout(profileTimer);
+        profileTimer = setTimeout(() => {
+          loadProfile(sess.user.id).catch(() => setProfile(null)).finally(finish);
         }, 0);
       } else {
         setProfile(null);
@@ -58,12 +66,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
     supabase.auth.getSession().then(({ data }) => {
+      if (!alive) return;
       setSession(data.session);
       setUser(data.session?.user ?? null);
-      if (data.session?.user) loadProfile(data.session.user.id).finally(() => setLoading(false));
+      if (data.session?.user) loadProfile(data.session.user.id).catch(() => setProfile(null)).finally(finish);
       else setLoading(false);
     });
-    return () => sub.subscription.unsubscribe();
+    return () => {
+      alive = false;
+      if (profileTimer) clearTimeout(profileTimer);
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
   const value: AuthCtx = {
