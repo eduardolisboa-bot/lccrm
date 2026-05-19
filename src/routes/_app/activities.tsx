@@ -116,7 +116,46 @@ function ActivitiesPage() {
       .update({ status_atividade: "concluida" })
       .eq("id", a.id);
     if (error) return toast.error(error.message);
-    toast.success("Concluída");
+    // Auto-recurrence: schedule next occurrence
+    if (a.recorrencia && a.recorrencia !== "nenhuma" && a.data_agendada) {
+      const nextDate = nextRecurrenceDate(a.data_agendada, a.recorrencia);
+      if (nextDate) {
+        const { titulo, descricao, tipo_atividade, prioridade, duracao_minutos,
+          lembrete_minutos, recorrencia, responsavel_id, client_id, opportunity_id, horario_agendado } = a;
+        await supabase.from("activities").insert({
+          titulo, descricao, tipo_atividade, prioridade, duracao_minutos,
+          lembrete_minutos, recorrencia, responsavel_id, client_id, opportunity_id,
+          horario_agendado,
+          data_agendada: nextDate,
+          status_atividade: "pendente",
+          data_atividade: new Date(`${nextDate}T${horario_agendado ?? "09:00"}`).toISOString(),
+        });
+        toast.success(`Concluída. Próxima ocorrência: ${new Date(nextDate).toLocaleDateString("pt-BR")}`);
+      } else {
+        toast.success("Concluída");
+      }
+    } else {
+      toast.success("Concluída");
+    }
+    qc.invalidateQueries({ queryKey: ["activities"] });
+  }
+
+  async function handleEventDrop({ event, start, end }: any) {
+    const newDate = new Date(start);
+    const dateStr = newDate.toISOString().slice(0, 10);
+    const timeStr = newDate.toTimeString().slice(0, 5);
+    const dur = Math.max(5, Math.round((new Date(end).getTime() - newDate.getTime()) / 60000));
+    const { error } = await supabase
+      .from("activities")
+      .update({
+        data_agendada: dateStr,
+        horario_agendado: timeStr,
+        duracao_minutos: dur,
+        data_atividade: newDate.toISOString(),
+      })
+      .eq("id", event.id);
+    if (error) return toast.error(error.message);
+    toast.success("Atividade reagendada");
     qc.invalidateQueries({ queryKey: ["activities"] });
   }
 
