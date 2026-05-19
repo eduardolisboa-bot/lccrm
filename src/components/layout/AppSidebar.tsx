@@ -51,7 +51,7 @@ export function AppSidebar() {
       </div>
 
       <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-0.5 scrollbar-slim">
-        {main.filter((i) => !("masterOnly" in i) || isMaster).map((i) => {
+        {main.filter((i) => !("internalOnly" in i) || isInternal).map((i) => {
           const Icon = i.icon;
           const active = path === i.to || path.startsWith(i.to + "/");
           return (
