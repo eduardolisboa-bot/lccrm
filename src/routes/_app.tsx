@@ -32,6 +32,7 @@ function AppLayout() {
         <main className="flex-1 min-w-0 overflow-x-hidden">
           <Outlet />
         </main>
+        <ThemeToggle floating />
       </div>
     </FunnelProvider>
   );
