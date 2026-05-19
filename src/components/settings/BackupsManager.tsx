@@ -25,6 +25,12 @@ type Row = {
   tamanho_bytes: number | null;
   tabelas: Record<string, number> | null;
   erro: string | null;
+  checksum_sha256: string | null;
+  validacao: {
+    checksum_ok?: boolean;
+    counts_match?: boolean;
+    mismatches?: { table: string; dump: number; live: number }[];
+  } | null;
 };
 
 export function BackupsManager() {
