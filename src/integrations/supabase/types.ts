@@ -157,6 +157,42 @@ export type Database = {
           },
         ]
       }
+      backup_history: {
+        Row: {
+          created_at: string
+          erro: string | null
+          id: string
+          iniciado_por: string | null
+          status: string
+          storage_path: string
+          tabelas: Json | null
+          tamanho_bytes: number | null
+          tipo: string
+        }
+        Insert: {
+          created_at?: string
+          erro?: string | null
+          id?: string
+          iniciado_por?: string | null
+          status?: string
+          storage_path: string
+          tabelas?: Json | null
+          tamanho_bytes?: number | null
+          tipo?: string
+        }
+        Update: {
+          created_at?: string
+          erro?: string | null
+          id?: string
+          iniciado_por?: string | null
+          status?: string
+          storage_path?: string
+          tabelas?: Json | null
+          tamanho_bytes?: number | null
+          tipo?: string
+        }
+        Relationships: []
+      }
       client_documents: {
         Row: {
           categoria: string | null
