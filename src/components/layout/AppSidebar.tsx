@@ -98,6 +98,7 @@ export function AppSidebar() {
               {profile?.tipo_usuario ?? ""}
             </div>
           </div>
+          <NotificationsBell />
           <button
             onClick={async () => { await signOut(); navigate({ to: "/login" }); }}
             className="text-muted-foreground hover:text-destructive p-1.5"
