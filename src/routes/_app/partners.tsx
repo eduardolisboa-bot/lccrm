@@ -67,7 +67,7 @@ function Partners() {
           <h1 className="text-3xl font-serif">Parceiros</h1>
           <p className="text-sm text-muted-foreground mt-1">{filtered.length} de {partners.length} parceiros</p>
         </div>
-        {isMaster && <NewPartner />}
+        {canCreate && <NewPartner />}
       </div>
 
       <div className="flex flex-wrap gap-2 items-center">
