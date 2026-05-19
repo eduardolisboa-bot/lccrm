@@ -1,6 +1,30 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
+async function isMasterAuthRequest(request: Request): Promise<boolean> {
+  const header = request.headers.get("authorization");
+  const token = header?.replace(/^Bearer\s+/i, "");
+  if (!token) return false;
+
+  const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(token);
+  if (userError || !userData.user) return false;
+
+  const { data: profile, error: profileError } = await supabaseAdmin
+    .from("user_profiles")
+    .select("tipo_usuario")
+    .eq("auth_user_id", userData.user.id)
+    .eq("status", "ativo")
+    .maybeSingle();
+
+  if (profileError) throw new Error("Falha ao verificar permissão: " + profileError.message);
+  return profile?.tipo_usuario === "master";
+}
+
+function hasCronApiKey(request: Request): boolean {
+  const expected = process.env.SUPABASE_PUBLISHABLE_KEY;
+  return Boolean(expected && request.headers.get("apikey") === expected);
+}
+
 async function sha256Hex(bytes: Uint8Array): Promise<string> {
   const ab = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
   const buf = await crypto.subtle.digest("SHA-256", ab);
@@ -163,6 +187,20 @@ export const Route = createFileRoute("/api/public/hooks/backup")({
         } catch {}
 
         try {
+          if (tipo === "manual" && !(await isMasterAuthRequest(request))) {
+            return new Response(JSON.stringify({ success: false, error: "Acesso restrito ao Master" }), {
+              status: 403,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+
+          if (tipo === "automatico" && !hasCronApiKey(request)) {
+            return new Response(JSON.stringify({ success: false, error: "Chave de agendamento inválida" }), {
+              status: 401,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+
           const res = await dumpAll(tipo, iniciadoPor);
           return new Response(JSON.stringify({ success: true, ...res }), {
             headers: { "Content-Type": "application/json" },

@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, KanbanSquare, Handshake, Users, Briefcase, ListChecks, UserCog, Settings, LogOut, Copy, DollarSign } from "lucide-react";
+import { LayoutDashboard, KanbanSquare, Handshake, Users, Briefcase, ListChecks, DatabaseBackup, UserCog, Settings, LogOut, Copy, DollarSign } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { NotificationsBell } from "@/components/NotificationsBell";
 import logo from "@/assets/lisboa-capital-logo.png";
@@ -11,6 +11,7 @@ const main = [
   { to: "/clients", label: "Clientes", icon: Users },
   { to: "/opportunities", label: "Oportunidades", icon: Briefcase },
   { to: "/activities", label: "Atividades", icon: ListChecks },
+  { to: "/backups", label: "Backups", icon: DatabaseBackup, masterOnly: true },
 ] as const;
 
 const masterMain = [
@@ -49,7 +50,7 @@ export function AppSidebar() {
       </div>
 
       <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-0.5 scrollbar-slim">
-        {main.map((i) => {
+        {main.filter((i) => !("masterOnly" in i) || isMaster).map((i) => {
           const Icon = i.icon;
           const active = path === i.to || path.startsWith(i.to + "/");
           return (
