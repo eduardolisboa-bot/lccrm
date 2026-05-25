@@ -185,7 +185,6 @@ export function OpportunityDrawer({ oppId, open, onClose }: Props) {
                   onCancel={() => setEditing(false)}
                 />
               ) : (
-              ) : (
                 <div className="space-y-2 text-sm">
                   <Field label="Cliente" value={opp.clients?.nome ?? "—"} />
                   <Field label="Parceiro" value={opp.partners?.nome ?? "Direto"} />
