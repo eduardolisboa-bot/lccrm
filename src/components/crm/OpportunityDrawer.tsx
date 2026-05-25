@@ -143,7 +143,7 @@ export function OpportunityDrawer({ oppId, open, onClose }: Props) {
                 <Select value={opp.etapa_id ?? ""} onValueChange={(v) => update.mutate({ etapa_id: v })}>
                   <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {stages.map((s: any) => <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>)}
+                    {stagesForFunnel(opp.funnel_id).map((s: any) => <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
