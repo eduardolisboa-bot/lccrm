@@ -174,7 +174,17 @@ export function OpportunityDrawer({ oppId, open, onClose }: Props) {
               </div>
 
               {editing ? (
-                <EditForm opp={opp} onSave={(p) => update.mutate(p)} onCancel={() => setEditing(false)} />
+                <EditForm
+                  opp={opp}
+                  clientsList={clientsList}
+                  partnersList={partnersList}
+                  profilesList={profilesList}
+                  funnelsList={funnelsList}
+                  stagesForFunnel={stagesForFunnel}
+                  onSave={(p) => update.mutate(p)}
+                  onCancel={() => setEditing(false)}
+                />
+              ) : (
               ) : (
                 <div className="space-y-2 text-sm">
                   <Field label="Cliente" value={opp.clients?.nome ?? "—"} />
