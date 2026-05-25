@@ -245,13 +245,62 @@ function Field({ label, value }: { label: string; value: any }) {
   );
 }
 
-function EditForm({ opp, onSave, onCancel }: { opp: any; onSave: (p: any) => void; onCancel: () => void }) {
+function EditForm({
+  opp,
+  clientsList,
+  partnersList,
+  profilesList,
+  funnelsList,
+  stagesForFunnel,
+  onSave,
+  onCancel,
+}: {
+  opp: any;
+  clientsList: any[];
+  partnersList: any[];
+  profilesList: any[];
+  funnelsList: any[];
+  stagesForFunnel: (fid: string | null | undefined) => any[];
+  onSave: (p: any) => void;
+  onCancel: () => void;
+}) {
   const [titulo, setTitulo] = useState(opp.titulo);
   const [valor, setValor] = useState(opp.valor_estimado ?? "");
   const [produto, setProduto] = useState(opp.produto_interesse ?? "");
   const [proxAcao, setProxAcao] = useState(opp.proxima_acao ?? "");
   const [data, setData] = useState(opp.data_proxima_acao ?? "");
   const [obs, setObs] = useState(opp.observacoes ?? "");
+  const [clienteId, setClienteId] = useState<string>(opp.cliente_id ?? "__none");
+  const [parceiroId, setParceiroId] = useState<string>(opp.parceiro_id ?? "__none");
+  const [responsavelId, setResponsavelId] = useState<string>(opp.responsavel_id ?? "__none");
+  const [origem, setOrigem] = useState<string>(opp.origem);
+  const [funnelId, setFunnelId] = useState<string>(opp.funnel_id);
+  const [etapaId, setEtapaId] = useState<string>(opp.etapa_id ?? "");
+  const [temperatura, setTemperatura] = useState<string>(opp.temperatura);
+  const [statusDoc, setStatusDoc] = useState<string>(opp.status_documentacao);
+
+  const availableStages = stagesForFunnel(funnelId);
+
+  const handleSave = () => {
+    const patch: any = {
+      titulo,
+      valor_estimado: Number(valor) || 0,
+      produto_interesse: produto || null,
+      proxima_acao: proxAcao || null,
+      data_proxima_acao: data || null,
+      observacoes: obs || null,
+      cliente_id: clienteId === "__none" ? null : clienteId,
+      parceiro_id: parceiroId === "__none" ? null : parceiroId,
+      responsavel_id: responsavelId === "__none" ? null : responsavelId,
+      origem,
+      funnel_id: funnelId,
+      etapa_id: etapaId || null,
+      temperatura,
+      status_documentacao: statusDoc,
+    };
+    onSave(patch);
+  };
+
   return (
     <div className="space-y-3">
       <div><Label>Título</Label><Input value={titulo} onChange={(e) => setTitulo(e.target.value)} /></div>
@@ -260,12 +309,100 @@ function EditForm({ opp, onSave, onCancel }: { opp: any; onSave: (p: any) => voi
         <div><Label>Produto</Label><Input value={produto} onChange={(e) => setProduto(e.target.value)} /></div>
       </div>
       <div className="grid grid-cols-2 gap-2">
+        <div>
+          <Label>Cliente</Label>
+          <Select value={clienteId} onValueChange={setClienteId}>
+            <SelectTrigger className="mt-1"><SelectValue placeholder="Selecionar" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none">— Sem cliente —</SelectItem>
+              {clientsList.map((c) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label>Parceiro</Label>
+          <Select value={parceiroId} onValueChange={setParceiroId}>
+            <SelectTrigger className="mt-1"><SelectValue placeholder="Direto" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none">Direto</SelectItem>
+              {partnersList.map((p) => <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <Label>Responsável</Label>
+          <Select value={responsavelId} onValueChange={setResponsavelId}>
+            <SelectTrigger className="mt-1"><SelectValue placeholder="—" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none">— Sem responsável —</SelectItem>
+              {profilesList.map((p) => <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label>Origem</Label>
+          <Select value={origem} onValueChange={setOrigem}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="direto">Direto</SelectItem>
+              <SelectItem value="parceiro">Parceiro</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <Label>Funil</Label>
+          <Select value={funnelId} onValueChange={(v) => { setFunnelId(v); setEtapaId(""); }}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {funnelsList.map((f) => <SelectItem key={f.id} value={f.id}>{f.nome}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label>Etapa</Label>
+          <Select value={etapaId} onValueChange={setEtapaId}>
+            <SelectTrigger className="mt-1"><SelectValue placeholder="Selecionar" /></SelectTrigger>
+            <SelectContent>
+              {availableStages.map((s) => <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <Label>Temperatura</Label>
+          <Select value={temperatura} onValueChange={setTemperatura}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="frio">Frio</SelectItem>
+              <SelectItem value="morno">Morno</SelectItem>
+              <SelectItem value="quente">Quente</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label>Status doc.</Label>
+          <Select value={statusDoc} onValueChange={setStatusDoc}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {["nao_solicitado","solicitado","parcial","recebido","em_analise","aprovado","reprovado","pendente_correcao"].map((s) => (
+                <SelectItem key={s} value={s}>{s.replace(/_/g, " ")}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
         <div><Label>Próx. ação</Label><Input value={proxAcao} onChange={(e) => setProxAcao(e.target.value)} /></div>
         <div><Label>Data</Label><Input type="date" value={data} onChange={(e) => setData(e.target.value)} /></div>
       </div>
       <div><Label>Observações</Label><Textarea rows={3} value={obs} onChange={(e) => setObs(e.target.value)} /></div>
       <div className="flex gap-2">
-        <Button onClick={() => onSave({ titulo, valor_estimado: Number(valor) || 0, produto_interesse: produto, proxima_acao: proxAcao, data_proxima_acao: data || null, observacoes: obs })}>Salvar</Button>
+        <Button onClick={handleSave}>Salvar</Button>
         <Button variant="outline" onClick={onCancel}>Cancelar</Button>
       </div>
     </div>
