@@ -35,9 +35,27 @@ export function OpportunityDrawer({ oppId, open, onClose }: Props) {
     },
   });
   const { data: stages = [] } = useQuery({
-    queryKey: ["stages-active"],
+    queryKey: ["stages-all"],
     queryFn: async () => (await supabase.from("pipeline_stages").select("*").eq("ativa", true).order("ordem")).data ?? [],
   });
+  const { data: clientsList = [] } = useQuery({
+    queryKey: ["clients-lookup"],
+    queryFn: async () => (await supabase.from("clients").select("id,nome").order("nome")).data ?? [],
+  });
+  const { data: partnersList = [] } = useQuery({
+    queryKey: ["partners-lookup"],
+    queryFn: async () => (await supabase.from("partners").select("id,nome").order("nome")).data ?? [],
+  });
+  const { data: profilesList = [] } = useQuery({
+    queryKey: ["profiles-lookup"],
+    queryFn: async () => (await supabase.from("user_profiles").select("id,nome").eq("status", "ativo").order("nome")).data ?? [],
+  });
+  const { data: funnelsList = [] } = useQuery({
+    queryKey: ["funnels-lookup"],
+    queryFn: async () => (await supabase.from("funnels").select("id,nome").eq("ativo", true).order("ordem")).data ?? [],
+  });
+  const stagesForFunnel = (fid: string | null | undefined) =>
+    stages.filter((s: any) => !fid || s.funnel_id === fid);
   const { data: activities = [] } = useQuery({
     queryKey: ["activities", oppId],
     enabled: !!oppId,
