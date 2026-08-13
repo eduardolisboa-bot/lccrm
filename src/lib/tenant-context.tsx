@@ -63,6 +63,8 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     root.style.setProperty("--primary", c(b.primary));
     root.style.setProperty("--ring", c(b.primary));
     root.style.setProperty("--sidebar-primary", c(b.primary));
+    root.style.setProperty("--accent-gold", c(b.primary));
+    root.style.setProperty("--accent-gold-muted", `color-mix(in oklab, ${c(b.primary)} 14%, transparent)`);
     root.dataset["tenant"] = activeTenant.id;
     document.title = `${activeTenant.name} — CRM`;
     let link = document.querySelector<HTMLLinkElement>("link[rel='icon']");
