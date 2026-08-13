@@ -1,5 +1,5 @@
 import { distance } from "fastest-levenshtein";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase-active";
 import { onlyDigits } from "@/lib/documentValidation";
 
 interface ClientLite {

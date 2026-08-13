@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase-active";
 import { KanbanBoard } from "@/components/crm/KanbanBoard";
 import { FunnelSwitcher } from "@/components/crm/FunnelSwitcher";
 import { useFunnel } from "@/lib/funnel-context";
