@@ -42,21 +42,10 @@ export function AppSidebar() {
 
   return (
     <aside className="w-60 shrink-0 bg-card border-r border-border flex flex-col h-screen sticky top-0">
-      <div className="px-5 pt-6 pb-4 flex items-center gap-3 border-b border-border">
-        <div className="logo-plate">
-          <img src={activeTenant.branding.logoDark} alt={activeTenant.name} className="w-10 h-10 object-contain" />
-        </div>
-        <div>
-          <div className="font-serif text-base leading-tight">{activeTenant.name}</div>
-          <div className="text-[10px] tracking-widest text-primary/70">PRIVATE</div>
-        </div>
+      <div className="px-3 pt-5 pb-4 border-b border-border">
+        <TenantSwitcher variant="brand" />
       </div>
 
-      {configuredTenants.length > 1 && (
-        <div className="px-3 pt-3">
-          <TenantSwitcher />
-        </div>
-      )}
 
       <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-0.5 scrollbar-slim">
         {main.filter((i) => !("internalOnly" in i) || isInternal).map((i) => {
