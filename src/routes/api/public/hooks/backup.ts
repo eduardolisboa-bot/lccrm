@@ -33,10 +33,11 @@ async function sha256Hex(bytes: Uint8Array): Promise<string> {
     .join("");
 }
 
-async function countRow(table: string): Promise<number> {
+async function countRow(table: string, tenant: string): Promise<number> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { count, error } = await (supabaseAdmin.from(table as never) as any)
-    .select("*", { count: "exact", head: true });
+  let q: any = (supabaseAdmin.from(table as never) as any).select("*", { count: "exact", head: true });
+  q = table === "user_profiles" ? q.contains("tenants", [tenant]) : q.eq("tenant", tenant);
+  const { count, error } = await q;
   if (error) throw new Error(`count ${table}: ${error.message}`);
   return (count as number) ?? 0;
 }
@@ -63,7 +64,10 @@ const TABLES = [
   "audit_logs",
 ] as const;
 
-async function dumpAll(tipo: "automatico" | "manual", iniciadoPor: string | null) {
+type Tenant = "lisboa" | "epic" | "hope";
+const TENANTS: Tenant[] = ["lisboa", "epic", "hope"];
+
+async function dumpAll(tipo: "automatico" | "manual", iniciadoPor: string | null, tenant: Tenant) {
   const started = new Date();
   const dump: Record<string, unknown[]> = {};
   const counts: Record<string, number> = {};
@@ -73,10 +77,10 @@ async function dumpAll(tipo: "automatico" | "manual", iniciadoPor: string | null
     const pageSize = 1000;
     let from = 0;
     while (true) {
-      const { data, error } = await supabaseAdmin
-        .from(t)
-        .select("*")
-        .range(from, from + pageSize - 1);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let q: any = (supabaseAdmin.from(t as never) as any).select("*");
+      q = t === "user_profiles" ? q.contains("tenants", [tenant]) : q.eq("tenant", tenant);
+      const { data, error } = await q.range(from, from + pageSize - 1);
       if (error) throw new Error(`${t}: ${error.message}`);
       if (!data || data.length === 0) break;
       all.push(...data);
@@ -92,6 +96,7 @@ async function dumpAll(tipo: "automatico" | "manual", iniciadoPor: string | null
     version: 1,
     generated_at: started.toISOString(),
     project: "lisboa-capital-crm",
+    tenant,
     counts,
     data: dump,
   };
@@ -109,7 +114,7 @@ async function dumpAll(tipo: "automatico" | "manual", iniciadoPor: string | null
   const dd = String(started.getUTCDate()).padStart(2, "0");
   const hh = String(started.getUTCHours()).padStart(2, "0");
   const mi = String(started.getUTCMinutes()).padStart(2, "0");
-  const path = `${yyyy}/${mm}/${dd}/backup-${yyyy}${mm}${dd}-${hh}${mi}-${tipo}.json`;
+  const path = `${tenant}/${yyyy}/${mm}/${dd}/backup-${yyyy}${mm}${dd}-${hh}${mi}-${tipo}.json`;
 
   const { error: upErr } = await supabaseAdmin.storage
     .from("backups")
@@ -140,7 +145,7 @@ async function dumpAll(tipo: "automatico" | "manual", iniciadoPor: string | null
   const liveCounts: Record<string, number> = {};
   const mismatches: { table: string; dump: number; live: number }[] = [];
   for (const t of TABLES) {
-    const live = await countRow(t);
+    const live = await countRow(t, tenant);
     liveCounts[t] = live;
     if (live !== counts[t]) mismatches.push({ table: t, dump: counts[t], live });
   }
@@ -158,6 +163,7 @@ async function dumpAll(tipo: "automatico" | "manual", iniciadoPor: string | null
   const valid = checksumOk && validacao.file_size_ok; // count mismatches are warnings, not failures
 
   await supabaseAdmin.from("backup_history").insert({
+    tenant,
     storage_path: path,
     tipo,
     status: valid ? "sucesso" : "erro",
@@ -180,10 +186,12 @@ export const Route = createFileRoute("/api/public/hooks/backup")({
       POST: async ({ request }) => {
         let tipo: "automatico" | "manual" = "automatico";
         let iniciadoPor: string | null = null;
+        let tenant: Tenant | null = null;
         try {
-          const body = (await request.json()) as { tipo?: string; iniciado_por?: string };
+          const body = (await request.json()) as { tipo?: string; iniciado_por?: string; tenant?: string };
           if (body?.tipo === "manual") tipo = "manual";
           if (body?.iniciado_por) iniciadoPor = body.iniciado_por;
+          if (body?.tenant && (TENANTS as string[]).includes(body.tenant)) tenant = body.tenant as Tenant;
         } catch {}
 
         try {
@@ -201,14 +209,24 @@ export const Route = createFileRoute("/api/public/hooks/backup")({
             });
           }
 
-          const res = await dumpAll(tipo, iniciadoPor);
-          return new Response(JSON.stringify({ success: true, ...res }), {
+          if (tenant) {
+            const res = await dumpAll(tipo, iniciadoPor, tenant);
+            return new Response(JSON.stringify({ success: true, ...res }), {
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+
+          // Sem sistema informado (cron): faz backup dos três sistemas
+          const results = [];
+          for (const t of TENANTS) results.push({ tenant: t, ...(await dumpAll(tipo, iniciadoPor, t)) });
+          return new Response(JSON.stringify({ success: true, results }), {
             headers: { "Content-Type": "application/json" },
           });
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
           try {
             await supabaseAdmin.from("backup_history").insert({
+              tenant: tenant ?? "lisboa",
               storage_path: "(falhou)",
               tipo,
               status: "erro",
