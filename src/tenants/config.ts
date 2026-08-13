@@ -63,8 +63,8 @@ export const TENANTS: Tenant[] = [
     supportEmail: "contato@epicbiz.app",
     domain: "epicbiz.app",
     isHub: false,
-    supabaseUrl: env["VITE_EPIC_SUPABASE_URL"] || "",
-    supabaseAnonKey: env["VITE_EPIC_SUPABASE_ANON_KEY"] || "",
+    supabaseUrl: LISBOA_URL,
+    supabaseAnonKey: LISBOA_KEY,
     branding: {
       primary: "212 60% 45%",
       primaryHover: "212 60% 38%",
@@ -83,8 +83,8 @@ export const TENANTS: Tenant[] = [
     supportEmail: "contato@hopecapital.com.br",
     domain: "hopecapital.com.br",
     isHub: false,
-    supabaseUrl: env["VITE_HOPE_SUPABASE_URL"] || "",
-    supabaseAnonKey: env["VITE_HOPE_SUPABASE_ANON_KEY"] || "",
+    supabaseUrl: LISBOA_URL,
+    supabaseAnonKey: LISBOA_KEY,
     branding: {
       primary: "45 96% 53%",
       primaryHover: "45 96% 45%",
@@ -99,8 +99,10 @@ export const TENANTS: Tenant[] = [
 
 export const DEFAULT_TENANT_ID: TenantId = "lisboa";
 
-export function isTenantConfigured(t: Tenant) {
-  return Boolean(t.supabaseUrl && t.supabaseAnonKey);
+export function isTenantConfigured(_t: Tenant) {
+  // Sistema unificado: os três operam no mesmo endereço e no mesmo backend,
+  // com bases de dados isoladas por sistema.
+  return true;
 }
 
 export function getTenant(id: string | null | undefined): Tenant {
