@@ -15,6 +15,30 @@ function withTenant(values: unknown, tenant: TenantId): unknown {
   return values;
 }
 
+/** user_profiles guarda a lista de sistemas do usuário em `tenants`. */
+function scopeProfiles(qb: any, tenant: TenantId) {
+  return new Proxy(qb, {
+    get(target, prop, receiver) {
+      const value = Reflect.get(target, prop, receiver);
+      if (typeof value !== "function") return value;
+      switch (prop) {
+        case "select":
+          return (...args: unknown[]) => target.select(...args).contains("tenants", [tenant]);
+        case "insert":
+          return (values: unknown, ...rest: unknown[]) => {
+            const stamp = (v: AnyRec) => ({ tenants: [tenant], ...v });
+            const next = Array.isArray(values)
+              ? (values as AnyRec[]).map(stamp)
+              : stamp(values as AnyRec);
+            return target.insert(next, ...rest);
+          };
+        default:
+          return value.bind(target);
+      }
+    },
+  });
+}
+
 /** Wraps a PostgREST table builder so every read/write is scoped to the system. */
 function scopeTable(qb: any, tenant: TenantId) {
   return new Proxy(qb, {
@@ -53,7 +77,10 @@ export function getTenantClient(id: TenantId): TypedSupabase {
   const client = new Proxy(baseClient as unknown as TypedSupabase, {
     get(target, prop, receiver) {
       if (prop === "from") {
-        return (table: string) => scopeTable((target as any).from(table), id);
+        return (table: string) =>
+          table === "user_profiles"
+            ? scopeProfiles((target as any).from(table), id)
+            : scopeTable((target as any).from(table), id);
       }
       const value = Reflect.get(target as object, prop, receiver);
       return typeof value === "function" ? value.bind(target) : value;
