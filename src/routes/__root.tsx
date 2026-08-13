@@ -97,11 +97,21 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <AuthProvider>
-          <Outlet />
-          <Toaster />
-        </AuthProvider>
+        <TenantProvider>
+          <TenantScopedAuth />
+        </TenantProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
 }
+
+function TenantScopedAuth() {
+  const { activeTenant } = useTenant();
+  return (
+    <AuthProvider key={activeTenant.id}>
+      <Outlet />
+      <Toaster />
+    </AuthProvider>
+  );
+}
+
