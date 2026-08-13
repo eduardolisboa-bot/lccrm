@@ -2,7 +2,6 @@ import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { LayoutDashboard, KanbanSquare, Handshake, Users, Briefcase, ListChecks, DatabaseBackup, UserCog, Settings, LogOut, Copy, DollarSign } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { NotificationsBell } from "@/components/NotificationsBell";
-import { useTenant } from "@/lib/tenant-context";
 import { TenantSwitcher } from "@/components/tenant/TenantSwitcher";
 
 const main = [
@@ -28,7 +27,6 @@ const masterOnly = [
 export function AppSidebar() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { profile, signOut } = useAuth();
-  const { activeTenant, configuredTenants } = useTenant();
   const navigate = useNavigate();
   const isMaster = profile?.tipo_usuario === "master";
   const isInternal = isMaster || profile?.tipo_usuario === "interno";
