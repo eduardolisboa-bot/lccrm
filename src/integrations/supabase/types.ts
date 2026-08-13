@@ -32,6 +32,7 @@ export type Database = {
           recorrencia: string | null
           responsavel_id: string | null
           status_atividade: string | null
+          tenant: string
           tipo_atividade: string | null
           titulo: string | null
           user_id: string | null
@@ -53,6 +54,7 @@ export type Database = {
           recorrencia?: string | null
           responsavel_id?: string | null
           status_atividade?: string | null
+          tenant?: string
           tipo_atividade?: string | null
           titulo?: string | null
           user_id?: string | null
@@ -74,6 +76,7 @@ export type Database = {
           recorrencia?: string | null
           responsavel_id?: string | null
           status_atividade?: string | null
+          tenant?: string
           tipo_atividade?: string | null
           titulo?: string | null
           user_id?: string | null
@@ -125,6 +128,7 @@ export type Database = {
           entidade: string
           entidade_id: string | null
           id: string
+          tenant: string
           user_id: string | null
         }
         Insert: {
@@ -135,6 +139,7 @@ export type Database = {
           entidade: string
           entidade_id?: string | null
           id?: string
+          tenant?: string
           user_id?: string | null
         }
         Update: {
@@ -145,6 +150,7 @@ export type Database = {
           entidade?: string
           entidade_id?: string | null
           id?: string
+          tenant?: string
           user_id?: string | null
         }
         Relationships: [
@@ -168,6 +174,7 @@ export type Database = {
           storage_path: string
           tabelas: Json | null
           tamanho_bytes: number | null
+          tenant: string
           tipo: string
           validacao: Json | null
         }
@@ -181,6 +188,7 @@ export type Database = {
           storage_path: string
           tabelas?: Json | null
           tamanho_bytes?: number | null
+          tenant?: string
           tipo?: string
           validacao?: Json | null
         }
@@ -194,6 +202,7 @@ export type Database = {
           storage_path?: string
           tabelas?: Json | null
           tamanho_bytes?: number | null
+          tenant?: string
           tipo?: string
           validacao?: Json | null
         }
@@ -210,6 +219,7 @@ export type Database = {
           parceiro_id: string | null
           storage_path: string
           tamanho_bytes: number | null
+          tenant: string
           tipo_mime: string | null
           uploaded_by: string | null
         }
@@ -223,6 +233,7 @@ export type Database = {
           parceiro_id?: string | null
           storage_path: string
           tamanho_bytes?: number | null
+          tenant?: string
           tipo_mime?: string | null
           uploaded_by?: string | null
         }
@@ -236,6 +247,7 @@ export type Database = {
           parceiro_id?: string | null
           storage_path?: string
           tamanho_bytes?: number | null
+          tenant?: string
           tipo_mime?: string | null
           uploaded_by?: string | null
         }
@@ -283,6 +295,7 @@ export type Database = {
           motivo: string
           similaridade: number | null
           status: string | null
+          tenant: string
           updated_at: string
         }
         Insert: {
@@ -297,6 +310,7 @@ export type Database = {
           motivo: string
           similaridade?: number | null
           status?: string | null
+          tenant?: string
           updated_at?: string
         }
         Update: {
@@ -311,6 +325,7 @@ export type Database = {
           motivo?: string
           similaridade?: number | null
           status?: string | null
+          tenant?: string
           updated_at?: string
         }
         Relationships: [
@@ -353,6 +368,7 @@ export type Database = {
           observacao: string | null
           status_anterior: string | null
           status_novo: string
+          tenant: string
         }
         Insert: {
           alterado_por?: string | null
@@ -362,6 +378,7 @@ export type Database = {
           observacao?: string | null
           status_anterior?: string | null
           status_novo: string
+          tenant?: string
         }
         Update: {
           alterado_por?: string | null
@@ -371,6 +388,7 @@ export type Database = {
           observacao?: string | null
           status_anterior?: string | null
           status_novo?: string
+          tenant?: string
         }
         Relationships: [
           {
@@ -396,6 +414,7 @@ export type Database = {
           created_at: string
           id: string
           tag_id: string
+          tenant: string
         }
         Insert: {
           aplicada_por?: string | null
@@ -403,6 +422,7 @@ export type Database = {
           created_at?: string
           id?: string
           tag_id: string
+          tenant?: string
         }
         Update: {
           aplicada_por?: string | null
@@ -410,6 +430,7 @@ export type Database = {
           created_at?: string
           id?: string
           tag_id?: string
+          tenant?: string
         }
         Relationships: [
           {
@@ -456,6 +477,7 @@ export type Database = {
           status: string | null
           telefone: string | null
           telefone_whatsapp: string | null
+          tenant: string
           tipo_cliente: Database["public"]["Enums"]["client_tipo"]
         }
         Insert: {
@@ -478,6 +500,7 @@ export type Database = {
           status?: string | null
           telefone?: string | null
           telefone_whatsapp?: string | null
+          tenant?: string
           tipo_cliente?: Database["public"]["Enums"]["client_tipo"]
         }
         Update: {
@@ -500,6 +523,7 @@ export type Database = {
           status?: string | null
           telefone?: string | null
           telefone_whatsapp?: string | null
+          tenant?: string
           tipo_cliente?: Database["public"]["Enums"]["client_tipo"]
         }
         Relationships: [
@@ -528,6 +552,7 @@ export type Database = {
           parceiro_id: string | null
           percentual: number
           produto: string | null
+          tenant: string
           updated_at: string
           valor_maximo: number | null
           valor_minimo: number | null
@@ -540,6 +565,7 @@ export type Database = {
           parceiro_id?: string | null
           percentual?: number
           produto?: string | null
+          tenant?: string
           updated_at?: string
           valor_maximo?: number | null
           valor_minimo?: number | null
@@ -552,6 +578,7 @@ export type Database = {
           parceiro_id?: string | null
           percentual?: number
           produto?: string | null
+          tenant?: string
           updated_at?: string
           valor_maximo?: number | null
           valor_minimo?: number | null
@@ -564,6 +591,7 @@ export type Database = {
           funnel_id: string
           id: string
           mes: string
+          tenant: string
           updated_at: string
           valor_meta: number
         }
@@ -572,6 +600,7 @@ export type Database = {
           funnel_id: string
           id?: string
           mes: string
+          tenant?: string
           updated_at?: string
           valor_meta?: number
         }
@@ -580,6 +609,7 @@ export type Database = {
           funnel_id?: string
           id?: string
           mes?: string
+          tenant?: string
           updated_at?: string
           valor_meta?: number
         }
@@ -602,6 +632,7 @@ export type Database = {
           id: string
           nome: string
           ordem: number
+          tenant: string
         }
         Insert: {
           ativo?: boolean
@@ -611,6 +642,7 @@ export type Database = {
           id?: string
           nome: string
           ordem?: number
+          tenant?: string
         }
         Update: {
           ativo?: boolean
@@ -620,6 +652,7 @@ export type Database = {
           id?: string
           nome?: string
           ordem?: number
+          tenant?: string
         }
         Relationships: []
       }
@@ -632,6 +665,7 @@ export type Database = {
           lida: boolean
           link: string | null
           mensagem: string | null
+          tenant: string
           tipo: string | null
           titulo: string
           user_id: string
@@ -644,6 +678,7 @@ export type Database = {
           lida?: boolean
           link?: string | null
           mensagem?: string | null
+          tenant?: string
           tipo?: string | null
           titulo: string
           user_id: string
@@ -656,6 +691,7 @@ export type Database = {
           lida?: boolean
           link?: string | null
           mensagem?: string | null
+          tenant?: string
           tipo?: string | null
           titulo?: string
           user_id?: string
@@ -678,6 +714,7 @@ export type Database = {
           responsavel_id: string | null
           status_documentacao: string
           temperatura: Database["public"]["Enums"]["temperatura"]
+          tenant: string
           titulo: string
           updated_at: string
           valor_estimado: number | null
@@ -697,6 +734,7 @@ export type Database = {
           responsavel_id?: string | null
           status_documentacao?: string
           temperatura?: Database["public"]["Enums"]["temperatura"]
+          tenant?: string
           titulo: string
           updated_at?: string
           valor_estimado?: number | null
@@ -716,6 +754,7 @@ export type Database = {
           responsavel_id?: string | null
           status_documentacao?: string
           temperatura?: Database["public"]["Enums"]["temperatura"]
+          tenant?: string
           titulo?: string
           updated_at?: string
           valor_estimado?: number | null
@@ -765,6 +804,7 @@ export type Database = {
           id: string
           partner_id: string
           tag_id: string
+          tenant: string
         }
         Insert: {
           aplicada_por?: string | null
@@ -772,6 +812,7 @@ export type Database = {
           id?: string
           partner_id: string
           tag_id: string
+          tenant?: string
         }
         Update: {
           aplicada_por?: string | null
@@ -779,6 +820,7 @@ export type Database = {
           id?: string
           partner_id?: string
           tag_id?: string
+          tenant?: string
         }
         Relationships: [
           {
@@ -815,6 +857,7 @@ export type Database = {
           responsavel_id: string | null
           status: Database["public"]["Enums"]["entity_status"]
           telefone: string | null
+          tenant: string
           tipo: Database["public"]["Enums"]["partner_tipo"]
         }
         Insert: {
@@ -827,6 +870,7 @@ export type Database = {
           responsavel_id?: string | null
           status?: Database["public"]["Enums"]["entity_status"]
           telefone?: string | null
+          tenant?: string
           tipo?: Database["public"]["Enums"]["partner_tipo"]
         }
         Update: {
@@ -839,6 +883,7 @@ export type Database = {
           responsavel_id?: string | null
           status?: Database["public"]["Enums"]["entity_status"]
           telefone?: string | null
+          tenant?: string
           tipo?: Database["public"]["Enums"]["partner_tipo"]
         }
         Relationships: [
@@ -863,6 +908,7 @@ export type Database = {
           percentual_progresso: number | null
           probabilidade_fechamento: number | null
           sla_dias: number | null
+          tenant: string
           tipo: Database["public"]["Enums"]["stage_tipo"]
         }
         Insert: {
@@ -876,6 +922,7 @@ export type Database = {
           percentual_progresso?: number | null
           probabilidade_fechamento?: number | null
           sla_dias?: number | null
+          tenant?: string
           tipo?: Database["public"]["Enums"]["stage_tipo"]
         }
         Update: {
@@ -889,6 +936,7 @@ export type Database = {
           percentual_progresso?: number | null
           probabilidade_fechamento?: number | null
           sla_dias?: number | null
+          tenant?: string
           tipo?: Database["public"]["Enums"]["stage_tipo"]
         }
         Relationships: [
@@ -907,6 +955,7 @@ export type Database = {
           id: string
           mes: string
           stage_id: string
+          tenant: string
           updated_at: string
           valor_meta: number
         }
@@ -915,6 +964,7 @@ export type Database = {
           id?: string
           mes: string
           stage_id: string
+          tenant?: string
           updated_at?: string
           valor_meta?: number
         }
@@ -923,6 +973,7 @@ export type Database = {
           id?: string
           mes?: string
           stage_id?: string
+          tenant?: string
           updated_at?: string
           valor_meta?: number
         }
@@ -944,6 +995,7 @@ export type Database = {
           created_at: string
           id: string
           nome: string
+          tenant: string
           tipo: string | null
         }
         Insert: {
@@ -953,6 +1005,7 @@ export type Database = {
           created_at?: string
           id?: string
           nome: string
+          tenant?: string
           tipo?: string | null
         }
         Update: {
@@ -962,6 +1015,7 @@ export type Database = {
           created_at?: string
           id?: string
           nome?: string
+          tenant?: string
           tipo?: string | null
         }
         Relationships: []
@@ -973,6 +1027,7 @@ export type Database = {
           google_refresh_token: string | null
           id: string
           sync_mode: string | null
+          tenant: string
           ultima_sincronizacao: string | null
           user_id: string
         }
@@ -982,6 +1037,7 @@ export type Database = {
           google_refresh_token?: string | null
           id?: string
           sync_mode?: string | null
+          tenant?: string
           ultima_sincronizacao?: string | null
           user_id: string
         }
@@ -991,6 +1047,7 @@ export type Database = {
           google_refresh_token?: string | null
           id?: string
           sync_mode?: string | null
+          tenant?: string
           ultima_sincronizacao?: string | null
           user_id?: string
         }
@@ -1009,18 +1066,21 @@ export type Database = {
           created_at: string
           funnel_id: string
           id: string
+          tenant: string
           user_profile_id: string
         }
         Insert: {
           created_at?: string
           funnel_id: string
           id?: string
+          tenant?: string
           user_profile_id: string
         }
         Update: {
           created_at?: string
           funnel_id?: string
           id?: string
+          tenant?: string
           user_profile_id?: string
         }
         Relationships: [
@@ -1049,6 +1109,7 @@ export type Database = {
           nome: string
           parceiro_id: string | null
           status: string
+          tenants: string[]
           tipo_usuario: Database["public"]["Enums"]["user_tipo"]
         }
         Insert: {
@@ -1059,6 +1120,7 @@ export type Database = {
           nome: string
           parceiro_id?: string | null
           status?: string
+          tenants?: string[]
           tipo_usuario?: Database["public"]["Enums"]["user_tipo"]
         }
         Update: {
@@ -1069,6 +1131,7 @@ export type Database = {
           nome?: string
           parceiro_id?: string | null
           status?: string
+          tenants?: string[]
           tipo_usuario?: Database["public"]["Enums"]["user_tipo"]
         }
         Relationships: [
@@ -1096,6 +1159,7 @@ export type Database = {
         Args: { _auth_user: string; _funnel_id: string }
         Returns: boolean
       }
+      user_tenants: { Args: { _auth_user: string }; Returns: string[] }
     }
     Enums: {
       client_tipo: "direto" | "parceiro"
