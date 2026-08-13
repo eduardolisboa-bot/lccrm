@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Lock } from "lucide-react";
 import { useTenant } from "@/lib/tenant-context";
 import { TenantLoginDialog } from "@/components/tenant/TenantLoginDialog";
-import { TENANTS, isTenantConfigured, type TenantId } from "@/tenants/config";
+import { TENANTS, type TenantId } from "@/tenants/config";
 
 export function TenantSwitcher({ variant = "compact" }: { variant?: "compact" | "brand" }) {
   const { activeTenant, availableTenants, switchTenant } = useTenant();
@@ -53,12 +53,10 @@ export function TenantSwitcher({ variant = "compact" }: { variant?: "compact" | 
       {open && (
         <div className="absolute left-0 right-0 z-50 mt-1 rounded-md border border-border bg-card p-1 shadow-lg">
           {others.map((t) => {
-            const configured = isTenantConfigured(t);
             const logged = availableTenants.some((a) => a.id === t.id);
             return (
               <button
                 key={t.id}
-                disabled={!configured}
                 onClick={() => {
                   setOpen(false);
                   if (logged) switchTenant(t.id);
@@ -68,11 +66,7 @@ export function TenantSwitcher({ variant = "compact" }: { variant?: "compact" | 
               >
                 <img src={t.branding.logoDark} alt="" className="h-5 w-5 rounded object-contain" />
                 <span className="flex-1 truncate text-left">{t.name}</span>
-                {!configured ? (
-                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Em breve</span>
-                ) : !logged ? (
-                  <Lock className="h-3 w-3 text-muted-foreground" />
-                ) : null}
+                {!logged && <Lock className="h-3 w-3 text-muted-foreground" />}
               </button>
             );
           })}

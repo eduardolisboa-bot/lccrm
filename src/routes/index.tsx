@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Lock } from "lucide-react";
 import { useEffect, useState } from "react";
-import { TENANTS, isTenantConfigured, type TenantId } from "@/tenants/config";
+import { TENANTS, type TenantId } from "@/tenants/config";
 import { useTenant } from "@/lib/tenant-context";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -48,12 +47,10 @@ function SystemSelect() {
 
         <div className="grid gap-6 sm:grid-cols-3">
           {TENANTS.map((t) => {
-            const configured = isTenantConfigured(t);
             const logged = ready && availableTenants.some((a) => a.id === t.id);
             return (
               <button
                 key={t.id}
-                disabled={!configured}
                 onClick={() => go(t.id)}
                 className="group flex flex-col items-center gap-4 rounded-xl border border-border bg-card/80 p-8 text-center shadow-lg backdrop-blur transition hover:border-primary disabled:cursor-not-allowed disabled:opacity-50"
               >
@@ -63,15 +60,7 @@ function SystemSelect() {
                   <div className="text-xs text-muted-foreground">{t.legalName}</div>
                 </div>
                 <span className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                  {!configured ? (
-                    <span className="inline-flex items-center gap-1">
-                      <Lock className="h-3 w-3" /> Em breve
-                    </span>
-                  ) : logged ? (
-                    "Sessão ativa"
-                  ) : (
-                    "Entrar"
-                  )}
+                  {logged ? "Entrar no sistema" : "Entrar"}
                 </span>
               </button>
             );
