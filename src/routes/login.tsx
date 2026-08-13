@@ -5,15 +5,27 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import logo from "@/assets/lisboa-capital-logo.png";
 import { supabase } from "@/lib/supabase-active";
+import { useTenant } from "@/lib/tenant-context";
+import type { TenantId } from "@/tenants/config";
 
 export const Route = createFileRoute("/login")({
+  validateSearch: (s: Record<string, unknown>): { system?: TenantId } => {
+    const v = s["system"];
+    return v === "lisboa" || v === "epic" || v === "hope" ? { system: v } : {};
+  },
   component: LoginPage,
 });
 
 function LoginPage() {
   const { user, signIn, loading } = useAuth();
+  const { system } = Route.useSearch();
+  const { activeTenant, switchTenant, refreshAvailability } = useTenant();
+  const logo = activeTenant.branding.logoDark;
+
+  useEffect(() => {
+    if (system && system !== activeTenant.id) switchTenant(system);
+  }, [system, activeTenant.id, switchTenant]);
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,7 +52,10 @@ function LoginPage() {
       } else {
         const { error } = await signIn(email, password);
         if (error) toast.error(error);
-        else navigate({ to: "/dashboard" });
+        else {
+          await refreshAvailability();
+          navigate({ to: "/dashboard" });
+        }
       }
     } finally {
       setSubmitting(false);
@@ -53,7 +68,7 @@ function LoginPage() {
         <div className="flex flex-col items-center mb-8">
           <img src={logo} alt="Lisboa Capital" className="w-32 h-32 object-contain" />
           <p className="text-xs tracking-[0.3em] text-primary/80 mt-2 font-serif">
-            CONNECTING STRENGTH · STRUCTURING GROWTH
+            {activeTenant.name.toUpperCase()}
           </p>
         </div>
         <div className="bg-card/80 backdrop-blur-xl border rounded-xl p-8 shadow-2xl">
