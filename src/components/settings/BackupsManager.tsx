@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { supabase } from "@/lib/supabase-active";
+import { supabase, getActiveTenantId } from "@/lib/supabase-active";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -45,7 +45,7 @@ export function BackupsManager() {
   const [restoreTarget, setRestoreTarget] = useState<Row | null>(null);
 
   const { data: rows = [], isLoading } = useQuery({
-    queryKey: ["backup_history"],
+    queryKey: ["backup_history", getActiveTenantId()],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("backup_history")
@@ -65,7 +65,7 @@ export function BackupsManager() {
       const res = await fetch("/api/public/hooks/backup", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify({ tipo: "manual", iniciado_por: sess.session?.user?.id }),
+        body: JSON.stringify({ tipo: "manual", iniciado_por: sess.session?.user?.id, tenant: getActiveTenantId() }),
       });
       const json = await res.json();
       if (!res.ok || !json.success) throw new Error(json.error || "Falha no backup");
