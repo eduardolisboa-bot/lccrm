@@ -21,26 +21,19 @@ sistema tem seu próprio banco, usuários e sessão de login.
 Todo o código do CRM importa `@/lib/supabase-active`, então é impossível uma
 tela ler o banco de outro sistema por engano.
 
-## Ativar um novo sistema (Epic ou Hope)
+## Bases de dados
 
-1. **Criar o banco**: crie um novo projeto Supabase para o sistema.
-2. **Replicar o schema**: rode `scripts/replicate-schema.sql` no SQL Editor do
-   novo projeto. Ele contém todas as tabelas, políticas de acesso (RLS),
-   funções e triggers do sistema Lisboa.
-3. **Criar o usuário master** do novo sistema em Auth → Users (confirmar
-   e-mail) e conferir que o perfil criado ficou com `tipo_usuario = 'master'`.
-4. **Informar as chaves** no ambiente do projeto:
+Sistema unificado: **um endereço, um backend, três bases isoladas**. Cada linha
+de dado carrega o sistema a que pertence (`tenant`), e uma regra de acesso
+restritiva no banco impede que alguém leia ou grave em um sistema que não
+tenha liberado no perfil (`user_profiles.tenants`).
 
-   ```
-   VITE_EPIC_SUPABASE_URL=...
-   VITE_EPIC_SUPABASE_ANON_KEY=...
-   VITE_HOPE_SUPABASE_URL=...
-   VITE_HOPE_SUPABASE_ANON_KEY=...
-   ```
+Todas as consultas do app passam pelo cliente do sistema ativo
+(`src/lib/supabaseClients.ts`), que filtra e carimba automaticamente o
+`tenant` — nenhuma tela precisa lembrar disso.
 
-   Enquanto essas variáveis não existirem, o sistema aparece como
-   **“Em breve”** na tela de escolha e não pode ser aberto.
-5. **Ajustar a marca** em `src/tenants/config.ts` (cores, razão social, CNPJ).
+Epic e Hope nascem espelhando o Lisboa: mesmo funil, mesmas etapas e mesmas
+etiquetas, sem clientes, parceiros ou oportunidades.
 
 ## Backups
 
