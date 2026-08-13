@@ -41,7 +41,8 @@ function SystemSelect() {
         <header className="mb-12 text-center">
           <h1 className="font-serif text-4xl">Escolha o sistema</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Cada sistema possui base de dados e usuários totalmente independentes.
+            Mesmo endereço, troca interna: cada sistema mantém base de dados e usuários
+            totalmente independentes.
           </p>
         </header>
 
