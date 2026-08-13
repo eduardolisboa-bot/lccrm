@@ -52,7 +52,7 @@ export function TenantSwitcher() {
         <TenantLoginDialog
           tenantId={loginFor}
           onClose={() => setLoginFor(null)}
-          onSuccess={(id) => {
+          onSuccess={(id: TenantId) => {
             setLoginFor(null);
             switchTenant(id);
           }}
