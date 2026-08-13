@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-router";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/auth-context";
+import { TenantProvider, useTenant } from "@/lib/tenant-context";
 import { ThemeProvider } from "@/lib/theme-context";
 import appCss from "../styles.css?url";
 
