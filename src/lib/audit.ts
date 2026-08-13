@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase-active";
 
 export async function logAudit(params: {
   userId?: string | null;

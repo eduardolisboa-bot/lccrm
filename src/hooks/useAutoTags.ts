@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase-active";
 
 /**
  * Aplica/remove tags automáticas para um cliente com base em regras de negócio.

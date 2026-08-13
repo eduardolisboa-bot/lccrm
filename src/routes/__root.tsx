@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-router";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/auth-context";
+import { TenantProvider, useTenant } from "@/lib/tenant-context";
 import { ThemeProvider } from "@/lib/theme-context";
 import appCss from "../styles.css?url";
 
@@ -63,7 +64,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "Lisboa Capital — CRM" },
       { property: "og:description", content: "Connecting strength. Structuring growth. Building legacy." },
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "icon", type: "image/png", href: "/favicon.png" },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@400;500;600;700&display=swap",
+      },
+    ],
+
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -88,11 +100,21 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <AuthProvider>
-          <Outlet />
-          <Toaster />
-        </AuthProvider>
+        <TenantProvider>
+          <TenantScopedAuth />
+        </TenantProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
 }
+
+function TenantScopedAuth() {
+  const { activeTenant } = useTenant();
+  return (
+    <AuthProvider key={activeTenant.id}>
+      <Outlet />
+      <Toaster />
+    </AuthProvider>
+  );
+}
+
