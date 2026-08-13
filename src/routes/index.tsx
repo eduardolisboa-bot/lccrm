@@ -59,7 +59,7 @@ function SystemSelect() {
                 <img src={t.branding.logoDark} alt={t.name} className="h-20 w-20 object-contain" />
                 <div>
                   <div className="font-serif text-lg">{t.name}</div>
-                  <div className="text-xs text-muted-foreground">{t.domain}</div>
+                  <div className="text-xs text-muted-foreground">{t.legalName}</div>
                 </div>
                 <span className="text-[11px] uppercase tracking-widest text-muted-foreground">
                   {!configured ? (
