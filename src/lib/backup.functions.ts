@@ -32,6 +32,7 @@ type BackupEnvelope = {
     generated_at: string;
     project: string;
     counts: Record<string, number>;
+    tenant?: string;
     data: Record<string, unknown[]>;
   };
 };
@@ -40,6 +41,11 @@ async function sha256Hex(bytes: Uint8Array): Promise<string> {
   const ab = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
   const buf = await crypto.subtle.digest("SHA-256", ab);
   return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function scoped(qb: any, table: string, tenant: string) {
+  return table === "user_profiles" ? qb.contains("tenants", [tenant]) : qb.eq("tenant", tenant);
 }
 
 async function assertInternal(userId: string) {
@@ -90,10 +96,11 @@ export const verifyBackup = createServerFn({ method: "POST" })
     const liveCounts: Record<string, number> = {};
     const diffs: { table: string; backup: number; live: number; delta: number }[] = [];
 
+    const tenant = envelope.payload.tenant ?? "lisboa";
     for (const t of RESTORE_ORDER) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { count, error } = await (supabaseAdmin.from(t as never) as any)
-        .select("*", { count: "exact", head: true });
+      const { count, error } = await scoped((supabaseAdmin.from(t as never) as any)
+        .select("*", { count: "exact", head: true }), t, tenant);
       if (error) throw new Error(`count ${t}: ${error.message}`);
       const live = (count as number) ?? 0;
       const backup = dumpCounts[t] ?? 0;
@@ -134,6 +141,7 @@ export const restoreBackup = createServerFn({ method: "POST" })
     }
 
     const startedAt = new Date();
+    const tenant = envelope.payload.tenant ?? "lisboa";
     const dump = envelope.payload.data ?? {};
     const restoredCounts: Record<string, number> = {};
     const errors: { table: string; phase: "delete" | "insert"; error: string }[] = [];
@@ -141,9 +149,11 @@ export const restoreBackup = createServerFn({ method: "POST" })
     // DELETE in reverse dependency order
     for (const t of [...RESTORE_ORDER].reverse()) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error } = await (supabaseAdmin.from(t as never) as any)
-        .delete()
-        .neq("id", "00000000-0000-0000-0000-000000000000");
+      const { error } = await scoped(
+        (supabaseAdmin.from(t as never) as any).delete().neq("id", "00000000-0000-0000-0000-000000000000"),
+        t,
+        tenant,
+      );
       if (error) errors.push({ table: t, phase: "delete", error: error.message });
     }
 
@@ -175,8 +185,8 @@ export const restoreBackup = createServerFn({ method: "POST" })
     const mismatches: { table: string; backup: number; live: number }[] = [];
     for (const t of RESTORE_ORDER) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { count, error } = await (supabaseAdmin.from(t as never) as any)
-        .select("*", { count: "exact", head: true });
+      const { count, error } = await scoped((supabaseAdmin.from(t as never) as any)
+        .select("*", { count: "exact", head: true }), t, tenant);
       if (error) throw new Error(`post-restore count ${t}: ${error.message}`);
       const live = (count as number) ?? 0;
       liveCounts[t] = live;
@@ -193,6 +203,7 @@ export const restoreBackup = createServerFn({ method: "POST" })
         acao: ok ? "restore_success" : "restore_partial",
         user_id: context.userId,
         dados_novos: {
+          tenant,
           storage_path: data.storage_path,
           generated_at: envelope.payload.generated_at,
           duration_ms: Date.now() - startedAt.getTime(),
