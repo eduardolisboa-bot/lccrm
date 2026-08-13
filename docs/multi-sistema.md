@@ -1,9 +1,10 @@
 # CRM Multi-Sistema (Lisboa · Epic · Hope)
 
-Um único front-end publicado em **https://crm.lisboacapital.com.br**, com
-**bases de dados totalmente separadas** por sistema. Nenhum dado cruza de um
-sistema para outro: cada sistema tem seu próprio projeto de banco, seus
-próprios usuários e sua própria sessão de login.
+Uma **única URL** publicada em **https://crm.lisboacapital.com.br** para os três
+sistemas — a troca entre eles é **interna** (tela inicial ou seletor na barra
+lateral), sem domínios ou endereços separados. As **bases de dados são
+totalmente separadas** por sistema: nenhum dado cruza de um para outro, cada
+sistema tem seu próprio banco, usuários e sessão de login.
 
 ## Como funciona
 

@@ -41,7 +41,8 @@ function SystemSelect() {
         <header className="mb-12 text-center">
           <h1 className="font-serif text-4xl">Escolha o sistema</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Cada sistema possui base de dados e usuários totalmente independentes.
+            Mesmo endereço, troca interna: cada sistema mantém base de dados e usuários
+            totalmente independentes.
           </p>
         </header>
 
@@ -59,7 +60,7 @@ function SystemSelect() {
                 <img src={t.branding.logoDark} alt={t.name} className="h-20 w-20 object-contain" />
                 <div>
                   <div className="font-serif text-lg">{t.name}</div>
-                  <div className="text-xs text-muted-foreground">{t.domain}</div>
+                  <div className="text-xs text-muted-foreground">{t.legalName}</div>
                 </div>
                 <span className="text-[11px] uppercase tracking-widest text-muted-foreground">
                   {!configured ? (
