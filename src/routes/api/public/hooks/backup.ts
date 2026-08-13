@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-async function isInternalAuthRequest(request: Request): Promise<boolean> {
+async function isInternalAuthRequest(request: Request, tenant: string | null): Promise<boolean> {
   const header = request.headers.get("authorization");
   const token = header?.replace(/^Bearer\s+/i, "");
   if (!token) return false;
@@ -11,13 +11,16 @@ async function isInternalAuthRequest(request: Request): Promise<boolean> {
 
   const { data: profile, error: profileError } = await supabaseAdmin
     .from("user_profiles")
-    .select("tipo_usuario")
+    .select("tipo_usuario, tenants")
     .eq("auth_user_id", userData.user.id)
     .eq("status", "ativo")
     .maybeSingle();
 
   if (profileError) throw new Error("Falha ao verificar permissão: " + profileError.message);
-  return profile?.tipo_usuario === "master" || profile?.tipo_usuario === "interno";
+  const isInternal = profile?.tipo_usuario === "master" || profile?.tipo_usuario === "interno";
+  if (!isInternal) return false;
+  if (tenant && !(profile?.tenants ?? []).includes(tenant)) return false;
+  return true;
 }
 
 function hasCronApiKey(request: Request): boolean {
@@ -195,7 +198,7 @@ export const Route = createFileRoute("/api/public/hooks/backup")({
         } catch {}
 
         try {
-          if (tipo === "manual" && !(await isInternalAuthRequest(request))) {
+          if (tipo === "manual" && !(await isInternalAuthRequest(request, tenant))) {
             return new Response(JSON.stringify({ success: false, error: "Acesso restrito a usuários internos" }), {
               status: 403,
               headers: { "Content-Type": "application/json" },
