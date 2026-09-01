@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Download, Loader2, Play, ShieldCheck, AlertCircle, Clock, ShieldAlert, RotateCcw, Upload } from "lucide-react";
-import { createManualBackup, importBackup, verifyBackup, restoreBackup } from "@/lib/backup.functions";
+import { createManualBackup, getBackupDownloadUrl, importBackup, verifyBackup, restoreBackup } from "@/lib/backup.functions";
 import { useTenant } from "@/lib/tenant-context";
 
 function fmtSize(b: number | null | undefined) {
@@ -44,6 +44,7 @@ export function BackupsManager() {
   const qc = useQueryClient();
   const { activeTenant } = useTenant();
   const createBackupFn = useServerFn(createManualBackup);
+  const getDownloadUrlFn = useServerFn(getBackupDownloadUrl);
   const importBackupFn = useServerFn(importBackup);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [running, setRunning] = useState(false);
@@ -94,12 +95,12 @@ export function BackupsManager() {
   };
 
   const download = async (path: string) => {
-    const { data, error } = await supabase.storage.from("backups").createSignedUrl(path, 300);
-    if (error || !data?.signedUrl) {
-      toast.error(error?.message || "Falha ao gerar link");
-      return;
+    try {
+      const { url } = await getDownloadUrlFn({ data: { storage_path: path, tenant: activeTenant.id } });
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Falha ao gerar link");
     }
-    window.open(data.signedUrl, "_blank");
   };
 
   const lastOk = rows.find((r) => r.status === "sucesso");

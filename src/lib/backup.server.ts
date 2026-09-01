@@ -65,6 +65,17 @@ export async function assertInternalAccess(userId: string, tenant: BackupTenant)
   if (!internal || !data.tenants.includes(tenant)) throw new Error("Acesso negado a este sistema");
 }
 
+export async function assertRegisteredBackupPath(storagePath: string, tenant: BackupTenant) {
+  const { data, error } = await supabaseAdmin
+    .from("backup_history")
+    .select("id")
+    .eq("storage_path", storagePath)
+    .eq("tenant", tenant)
+    .maybeSingle();
+  if (error) throw new Error("Falha ao validar o arquivo: " + error.message);
+  if (!data) throw new Error("Backup não encontrado no histórico deste sistema");
+}
+
 export function parseAndValidateEnvelope(bytes: Uint8Array): BackupEnvelope {
   let parsed: unknown;
   try {

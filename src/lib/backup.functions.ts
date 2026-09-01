@@ -31,14 +31,29 @@ export const importBackup = createServerFn({ method: "POST" })
     return importBackupFile(new TextEncoder().encode(data.content), data.tenant, context.userId);
   });
 
+export const getBackupDownloadUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { storage_path: string; tenant: Tenant }) => ({ ...input, ...validateTenant(input) }))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { assertInternalAccess, assertRegisteredBackupPath } = await import("@/lib/backup.server");
+    await assertInternalAccess(context.userId, data.tenant);
+    await assertRegisteredBackupPath(data.storage_path, data.tenant);
+    const { data: signed, error } = await supabaseAdmin.storage.from("backups").createSignedUrl(data.storage_path, 300, {
+      download: data.storage_path.split("/").at(-1) ?? "backup.json",
+    });
+    if (error || !signed?.signedUrl) throw new Error("Falha ao preparar download: " + (error?.message ?? "link indisponível"));
+    return { url: signed.signedUrl };
+  });
+
 export const verifyBackup = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { storage_path: string; tenant: Tenant }) => ({ ...input, ...validateTenant(input) }))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { BACKUP_TABLES, assertInternalAccess, countTable, parseAndValidateEnvelope, verifyEnvelope } = await import("@/lib/backup.server");
+    const { BACKUP_TABLES, assertInternalAccess, assertRegisteredBackupPath, countTable, parseAndValidateEnvelope, verifyEnvelope } = await import("@/lib/backup.server");
     await assertInternalAccess(context.userId, data.tenant);
-    if (!data.storage_path.startsWith(`${data.tenant}/`)) throw new Error("O arquivo não pertence ao sistema ativo");
+    await assertRegisteredBackupPath(data.storage_path, data.tenant);
 
     const { data: file, error } = await supabaseAdmin.storage.from("backups").download(data.storage_path);
     if (error || !file) throw new Error("Falha ao baixar backup: " + (error?.message ?? "arquivo não encontrado"));
@@ -73,10 +88,10 @@ export const restoreBackup = createServerFn({ method: "POST" })
   .inputValidator((input: { storage_path: string; confirm: string; tenant: Tenant }) => ({ ...input, ...validateTenant(input) }))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { BACKUP_TABLES, assertInternalAccess, countTable, parseAndValidateEnvelope, scopeTenant, verifyEnvelope } = await import("@/lib/backup.server");
+    const { BACKUP_TABLES, assertInternalAccess, assertRegisteredBackupPath, countTable, parseAndValidateEnvelope, scopeTenant, verifyEnvelope } = await import("@/lib/backup.server");
     await assertInternalAccess(context.userId, data.tenant);
     if (data.confirm !== "RESTAURAR") throw new Error("Confirmação inválida. Digite RESTAURAR para confirmar.");
-    if (!data.storage_path.startsWith(`${data.tenant}/`)) throw new Error("O arquivo não pertence ao sistema ativo");
+    await assertRegisteredBackupPath(data.storage_path, data.tenant);
 
     const { data: file, error } = await supabaseAdmin.storage.from("backups").download(data.storage_path);
     if (error || !file) throw new Error("Falha ao baixar backup: " + (error?.message ?? "arquivo não encontrado"));
