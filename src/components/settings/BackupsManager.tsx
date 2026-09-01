@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { supabase, getActiveTenantId } from "@/lib/supabase-active";
+import { supabase } from "@/lib/supabase-active";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
