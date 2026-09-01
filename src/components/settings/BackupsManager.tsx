@@ -1,15 +1,16 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { supabase, getActiveTenantId } from "@/lib/supabase-active";
+import { supabase } from "@/lib/supabase-active";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Download, Loader2, Play, ShieldCheck, AlertCircle, Clock, ShieldAlert, RotateCcw } from "lucide-react";
-import { verifyBackup, restoreBackup } from "@/lib/backup.functions";
+import { Download, Loader2, Play, ShieldCheck, AlertCircle, Clock, ShieldAlert, RotateCcw, Upload } from "lucide-react";
+import { createManualBackup, getBackupDownloadUrl, importBackup, verifyBackup, restoreBackup } from "@/lib/backup.functions";
+import { useTenant } from "@/lib/tenant-context";
 
 function fmtSize(b: number | null | undefined) {
   if (!b) return "—";
@@ -41,11 +42,17 @@ type Row = {
 
 export function BackupsManager() {
   const qc = useQueryClient();
+  const { activeTenant } = useTenant();
+  const createBackupFn = useServerFn(createManualBackup);
+  const getDownloadUrlFn = useServerFn(getBackupDownloadUrl);
+  const importBackupFn = useServerFn(importBackup);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [running, setRunning] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [restoreTarget, setRestoreTarget] = useState<Row | null>(null);
 
   const { data: rows = [], isLoading } = useQuery({
-    queryKey: ["backup_history", getActiveTenantId()],
+    queryKey: ["backup_history", activeTenant.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("backup_history")
@@ -60,16 +67,7 @@ export function BackupsManager() {
   const runManual = useMutation({
     mutationFn: async () => {
       setRunning(true);
-      const { data: sess } = await supabase.auth.getSession();
-      const token = sess.session?.access_token;
-      const res = await fetch("/api/public/hooks/backup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify({ tipo: "manual", iniciado_por: sess.session?.user?.id, tenant: getActiveTenantId() }),
-      });
-      const json = await res.json();
-      if (!res.ok || !json.success) throw new Error(json.error || "Falha no backup");
-      return json;
+      return createBackupFn({ data: { tenant: activeTenant.id } });
     },
     onSuccess: () => {
       toast.success("Backup gerado com sucesso");
@@ -79,20 +77,37 @@ export function BackupsManager() {
     onSettled: () => setRunning(false),
   });
 
-  const download = async (path: string) => {
-    const { data, error } = await supabase.storage.from("backups").createSignedUrl(path, 300);
-    if (error || !data?.signedUrl) {
-      toast.error(error?.message || "Falha ao gerar link");
-      return;
+  const handleImport = async (file: File | undefined) => {
+    if (!file) return;
+    setImporting(true);
+    try {
+      if (!file.name.toLowerCase().endsWith(".json")) throw new Error("Selecione um arquivo de backup JSON");
+      const content = await file.text();
+      await importBackupFn({ data: { tenant: activeTenant.id, content } });
+      await qc.invalidateQueries({ queryKey: ["backup_history"] });
+      toast.success("Backup importado, validado e salvo com sucesso");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Falha ao importar backup");
+    } finally {
+      setImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
-    window.open(data.signedUrl, "_blank");
+  };
+
+  const download = async (path: string) => {
+    try {
+      const { url } = await getDownloadUrlFn({ data: { storage_path: path, tenant: activeTenant.id } });
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Falha ao gerar link");
+    }
   };
 
   const lastOk = rows.find((r) => r.status === "sucesso");
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
         <div className="rounded-lg border border-border bg-card p-4">
           <div className="flex items-center gap-2 text-xs text-muted-foreground"><Clock className="w-3.5 h-3.5" /> Agendamento</div>
           <div className="mt-1 text-sm">Automático · a cada 15 horas</div>
@@ -111,6 +126,17 @@ export function BackupsManager() {
           <Button onClick={() => runManual.mutate()} disabled={running}>
             {running ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4 mr-1" />}
             {running ? "Gerando…" : "Executar"}
+          </Button>
+        </div>
+        <div className="rounded-lg border border-border bg-card p-4 flex items-center justify-between">
+          <div>
+            <div className="text-xs text-muted-foreground">Arquivo externo</div>
+            <div className="text-sm mt-1">Importar backup JSON</div>
+          </div>
+          <input ref={fileInputRef} type="file" accept="application/json,.json" className="hidden" onChange={(event) => void handleImport(event.target.files?.[0])} />
+          <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={importing}>
+            {importing ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Upload className="w-4 h-4 mr-1" />}
+            Importar
           </Button>
         </div>
       </div>
@@ -172,7 +198,7 @@ export function BackupsManager() {
         Os arquivos JSON ficam no bucket privado <code>backups</code> (acesso restrito a usuários internos). Recomenda-se baixar periodicamente para arquivamento externo.
       </div>
 
-      <RestoreDialog target={restoreTarget} onClose={() => setRestoreTarget(null)} onDone={() => { setRestoreTarget(null); qc.invalidateQueries({ queryKey: ["backup_history"] }); }} />
+      <RestoreDialog target={restoreTarget} tenant={activeTenant.id} onClose={() => setRestoreTarget(null)} onDone={() => { setRestoreTarget(null); qc.invalidateQueries({ queryKey: ["backup_history"] }); }} />
     </div>
   );
 }
@@ -191,7 +217,7 @@ type VerifyResult = {
   ready_to_restore: boolean;
 };
 
-function RestoreDialog({ target, onClose, onDone }: { target: Row | null; onClose: () => void; onDone: () => void }) {
+function RestoreDialog({ target, tenant, onClose, onDone }: { target: Row | null; tenant: "lisboa" | "epic" | "hope"; onClose: () => void; onDone: () => void }) {
   const verifyFn = useServerFn(verifyBackup);
   const restoreFn = useServerFn(restoreBackup);
   const [verify, setVerify] = useState<VerifyResult | null>(null);
@@ -202,7 +228,7 @@ function RestoreDialog({ target, onClose, onDone }: { target: Row | null; onClos
     if (!target) return;
     setBusy("verify");
     try {
-      const r = (await verifyFn({ data: { storage_path: target.storage_path } })) as VerifyResult;
+      const r = (await verifyFn({ data: { storage_path: target.storage_path, tenant } })) as VerifyResult;
       setVerify(r);
       if (!r.checksum_ok) toast.error("Checksum inválido — backup corrompido");
       else toast.success("Backup íntegro e pronto para restauração");
@@ -221,7 +247,7 @@ function RestoreDialog({ target, onClose, onDone }: { target: Row | null; onClos
     }
     setBusy("restore");
     try {
-      const r = await restoreFn({ data: { storage_path: target.storage_path, confirm: "RESTAURAR" } });
+      const r = await restoreFn({ data: { storage_path: target.storage_path, confirm: "RESTAURAR", tenant } });
       if (r.success) toast.success(`Restauração concluída em ${(r.duration_ms / 1000).toFixed(1)}s`);
       else toast.warning(`Restauração concluída com avisos (${r.mismatches.length} divergências, ${r.errors.length} erros)`);
       onDone();
