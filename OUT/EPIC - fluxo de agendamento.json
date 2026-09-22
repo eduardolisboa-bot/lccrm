@@ -1,0 +1,2022 @@
+{
+  "name": "EPIC - fluxo de agendamento",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "epic-leads",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1888,
+        448
+      ],
+      "id": "eafff473-4e24-42cd-ac27-81eb6194fde4",
+      "name": "Webhook — Leads",
+      "webhookId": "f2f205be-d080-4bbb-a43c-b3a71bc436e1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "br5TOpMcJI89zVaX",
+          "name": "X-EPIC-Webhook-Secret"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const source = $input.first().json;\nconst body = source.body ?? source;\nif (!body.lead_id || !body.event || !body.contact || !body.answers) throw new Error('Payload EPIC inválido');\nconst a = body.answers;\nlet score = 0;\nconst capital = {'Acima de US$ 100 mil':40,'US$ 30 mil a US$ 100 mil':30,'US$ 15 mil a US$ 30 mil':20};\nconst prazo = {'Neste mês':25,'Em 30 a 60 dias':15};\nscore += capital[a.epic_capital_90d] ?? 0;\nscore += prazo[a.epic_prazo_aporte] ?? 0;\nif (Number(a.epic_prioridade_0a10) >= 8) score += 20;\nif (a.epic_liquidez === 'Parado em conta / CDI') score += 10;\nif (Array.isArray(a.epic_estrutura_us) && a.epic_estrutura_us.some(v => v !== 'Nenhuma ainda')) score += 5;\nscore = Math.max(0, Math.min(100, score));\nconst complete = body.event === 'quiz_concluido';\nconst hardGate = a.epic_capital_90d === 'Menos de US$ 15 mil (ainda montando)' || a.epic_momento === 'Ainda estou estudando. Não pretendo alocar capital nos próximos 6 meses.';\nlet route = 'in_progress', tag = 'em_qualificacao', duration = '', reason = 'Jornada ainda não concluída.';\nif (complete && hardGate) { route='nutrition'; tag='nao_qualificado'; reason='Sem ticket mínimo ou sem intenção de aporte nos próximos 6 meses.'; }\nelse if (complete && score < 40) { route='nutrition'; tag='nutricao_score'; reason='Score abaixo de 40 pontos; segue para maturação antes da agenda.'; }\nelse if (complete && a.epic_momento?.startsWith('Tenho US$ 100 mil')) { route='strategic_45'; tag='estrategico'; duration=45; reason='Lead estratégico elegível para agenda prioritária de 45 minutos.'; }\nelse if (complete && a.epic_momento?.startsWith('Tenho US$ 30 mil')) { route='calendar_45'; tag='qualificado_alto'; duration=45; reason='Lead qualificado para agenda de 45 minutos.'; }\nelse if (complete) { route='calendar_30'; tag='qualificado_entrada'; duration=30; reason='Lead qualificado para agenda de entrada de 30 minutos.'; }\nconst temperature = route === 'nutrition' ? 'frio' : score >= 70 ? 'quente' : score >= 40 ? 'morno' : 'frio';\nconst t = body.tracking ?? {};\nconst row = {\n  lead_id: body.lead_id, created_at: body.client_started_at, updated_at: body.occurred_at,\n  last_event_id: body.event_id, last_event: body.event, current_stage: body.stage, current_screen: body.screen, progress_percent: body.progress_percent,\n  nome: body.contact.nome ?? '', whatsapp: body.contact.whatsapp ?? '', email: body.contact.email ?? '',\n  epic_perfil: a.epic_perfil ?? '', epic_estrutura_us: Array.isArray(a.epic_estrutura_us) ? a.epic_estrutura_us.join(' | ') : '',\n  epic_experiencia_exterior: a.epic_experiencia_exterior ?? '', epic_objecao_principal: a.epic_objecao_principal ?? '',\n  epic_capital_90d: a.epic_capital_90d ?? '', epic_liquidez: a.epic_liquidez ?? '', epic_expectativa_retorno: a.epic_expectativa_retorno ?? '',\n  epic_motivador: a.epic_motivador ?? '', epic_prioridade_0a10: a.epic_prioridade_0a10 ?? '', epic_prazo_aporte: a.epic_prazo_aporte ?? '',\n  epic_momento: a.epic_momento ?? '', epic_objecao_final: a.epic_objecao_final ?? '', epic_score: score, lead_temperature: temperature,\n  route_key: route, tag, calendar_duration: duration, qualification_reason: reason, completed_at: complete ? body.occurred_at : '',\n  utm_source: t.utm_source ?? '', utm_medium: t.utm_medium ?? '', utm_campaign: t.utm_campaign ?? '', utm_content: t.utm_content ?? '', utm_term: t.utm_term ?? '',\n  fbclid: t.fbclid ?? '', gclid: t.gclid ?? '', creative_id: t.creative_id ?? '', landing_url: t.landing_url ?? '', referrer: t.referrer ?? '',\n  calendar_event_id: '', meeting_start: '', meeting_end: '', meet_url: '', payload_json: JSON.stringify(body)\n};\nreturn [{json: row}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1664,
+        448
+      ],
+      "id": "0240e49c-fa19-4ce4-9177-e16c2d667662",
+      "name": "Validar, pontuar e normalizar"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1B7vKFpDuAIqA52sUvBhfdVnktSfbLYNXlbihMzUHe9I",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1374039785,
+          "mode": "list",
+          "cachedResultName": "Eventos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1B7vKFpDuAIqA52sUvBhfdVnktSfbLYNXlbihMzUHe9I/edit#gid=1374039785"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "lead_id",
+              "displayName": "lead_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_event_id",
+              "displayName": "last_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_event",
+              "displayName": "last_event",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "current_stage",
+              "displayName": "current_stage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "current_screen",
+              "displayName": "current_screen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "progress_percent",
+              "displayName": "progress_percent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "epic_score",
+              "displayName": "epic_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lead_temperature",
+              "displayName": "lead_temperature",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "route_key",
+              "displayName": "route_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tag",
+              "displayName": "tag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1424,
+        448
+      ],
+      "id": "cb1293a5-55a6-4820-b6ab-c7a613e282b3",
+      "name": "Sheets — Registrar evento",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Tw7vmV5GDt7JZhMQ",
+          "name": "WT - Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1B7vKFpDuAIqA52sUvBhfdVnktSfbLYNXlbihMzUHe9I",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1B7vKFpDuAIqA52sUvBhfdVnktSfbLYNXlbihMzUHe9I/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "lead_id"
+          ],
+          "schema": [
+            {
+              "id": "lead_id",
+              "displayName": "lead_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_event_id",
+              "displayName": "last_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_event",
+              "displayName": "last_event",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "current_stage",
+              "displayName": "current_stage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "current_screen",
+              "displayName": "current_screen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "progress_percent",
+              "displayName": "progress_percent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "whatsapp",
+              "displayName": "whatsapp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "epic_perfil",
+              "displayName": "epic_perfil",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "epic_estrutura_us",
+              "displayName": "epic_estrutura_us",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "epic_experiencia_exterior",
+              "displayName": "epic_experiencia_exterior",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "epic_objecao_principal",
+              "displayName": "epic_objecao_principal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "epic_capital_90d",
+              "displayName": "epic_capital_90d",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "epic_liquidez",
+              "displayName": "epic_liquidez",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "epic_expectativa_retorno",
+              "displayName": "epic_expectativa_retorno",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "epic_motivador",
+              "displayName": "epic_motivador",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "epic_prioridade_0a10",
+              "displayName": "epic_prioridade_0a10",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "epic_prazo_aporte",
+              "displayName": "epic_prazo_aporte",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "epic_momento",
+              "displayName": "epic_momento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "epic_objecao_final",
+              "displayName": "epic_objecao_final",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "epic_score",
+              "displayName": "epic_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lead_temperature",
+              "displayName": "lead_temperature",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "route_key",
+              "displayName": "route_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tag",
+              "displayName": "tag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "calendar_duration",
+              "displayName": "calendar_duration",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "qualification_reason",
+              "displayName": "qualification_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "completed_at",
+              "displayName": "completed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "utm_source",
+              "displayName": "utm_source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "utm_medium",
+              "displayName": "utm_medium",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "utm_campaign",
+              "displayName": "utm_campaign",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "utm_content",
+              "displayName": "utm_content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "utm_term",
+              "displayName": "utm_term",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "fbclid",
+              "displayName": "fbclid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "gclid",
+              "displayName": "gclid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "creative_id",
+              "displayName": "creative_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "landing_url",
+              "displayName": "landing_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "referrer",
+              "displayName": "referrer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "calendar_event_id",
+              "displayName": "calendar_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "meeting_start",
+              "displayName": "meeting_start",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "meeting_end",
+              "displayName": "meeting_end",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "meet_url",
+              "displayName": "meet_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payload_json",
+              "displayName": "payload_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1168,
+        448
+      ],
+      "id": "b2383a43-b3e0-47dc-8591-9f8fbb4314de",
+      "name": "Sheets — Atualizar lead",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Tw7vmV5GDt7JZhMQ",
+          "name": "WT - Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, classification: { score: $json.epic_score, temperature: $json.lead_temperature, route: $json.route_key, tag: $json.tag, calendarDuration: $json.calendar_duration || null, reason: $json.qualification_reason } } }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -928,
+        448
+      ],
+      "id": "2791452b-e21f-4170-aeb2-154ad1ba062c",
+      "name": "Responder ao site"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.route_key }}",
+                    "rightValue": "nutrition",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Nutrição"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.route_key }}",
+                    "rightValue": "calendar_30",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Agenda 30"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.route_key }}",
+                    "rightValue": "calendar_45",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Agenda 45"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.route_key }}",
+                    "rightValue": "strategic_45",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Estratégico"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -672,
+        400
+      ],
+      "id": "e77a97e0-e50a-4aad-8167-af70ab8ebced",
+      "name": "Ramificar por score e rota"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://crm.lisboacapital.com.br/api/public/hooks/epic-leads",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ ...$json, crm_stage_key: 'nutrition' }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -384,
+        32
+      ],
+      "id": "9576ce90-5282-4f3c-b07d-d4ea28c72646",
+      "name": "CRM — EPIC / Nutrição",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "br5TOpMcJI89zVaX",
+          "name": "X-EPIC-Webhook-Secret"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://crm.lisboacapital.com.br/api/public/hooks/epic-leads",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ ...$json, crm_stage_key: 'qualified_30' }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -384,
+        240
+      ],
+      "id": "76f735fb-0e94-4446-ba28-e6ca90ce4155",
+      "name": "CRM — EPIC / Qualificado 30",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "br5TOpMcJI89zVaX",
+          "name": "X-EPIC-Webhook-Secret"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://crm.lisboacapital.com.br/api/public/hooks/epic-leads",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ ...$json, crm_stage_key: 'qualified_45' }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -384,
+        448
+      ],
+      "id": "7fa39e28-6d8d-4719-9c48-2302dd0e8e86",
+      "name": "CRM — EPIC / Qualificado 45",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "br5TOpMcJI89zVaX",
+          "name": "X-EPIC-Webhook-Secret"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://crm.lisboacapital.com.br/api/public/hooks/epic-leads",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ ...$json, crm_stage_key: 'strategic' }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -384,
+        656
+      ],
+      "id": "1f626316-8e01-482c-ba29-77a0d0e0bcf6",
+      "name": "CRM — EPIC / Estratégico",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "br5TOpMcJI89zVaX",
+          "name": "X-EPIC-Webhook-Secret"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        880
+      ],
+      "id": "85e76b48-95e0-4109-94a7-f2e781a2b9b1",
+      "name": "Atualização parcial — encerrar"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "epic-calendar-availability",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1856,
+        896
+      ],
+      "id": "947f74ee-2c9c-47d0-a8fc-1412487e3c84",
+      "name": "Webhook — Consultar agenda",
+      "webhookId": "695f5762-f415-47d2-b946-0609b560e60d",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "br5TOpMcJI89zVaX",
+          "name": "X-EPIC-Webhook-Secret"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body ?? $input.first().json;\nconst duration = [30,45].includes(Number(body.duration)) ? Number(body.duration) : 30;\nconst days = Math.max(1, Math.min(31, Number(body.days) || 21));\nconst now = new Date();\nconst timeMin = new Date(now.getTime() + 24*60*60*1000);\nconst timeMax = new Date(now.getTime() + days*24*60*60*1000);\nreturn [{json:{lead_id:body.lead_id,duration,days,timezone:'America/Sao_Paulo',timeMin:timeMin.toISOString(),timeMax:timeMax.toISOString()}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1616,
+        896
+      ],
+      "id": "0df9117f-0671-47b1-9116-eb3ccd9675e1",
+      "name": "Preparar janela"
+    },
+    {
+      "parameters": {
+        "resource": "calendar",
+        "calendar": {
+          "__rl": true,
+          "value": "c_6c88ffec1dc61b3a97edaa8d93d714e090e4b0c39a8984aa932b4c52d6f9eaab@group.calendar.google.com",
+          "mode": "id"
+        },
+        "timeMin": "={{ $json.timeMin }}",
+        "timeMax": "={{ $json.timeMax }}",
+        "options": {
+          "outputFormat": "bookedSlots",
+          "timezone": {
+            "__rl": true,
+            "value": "America/Sao_Paulo",
+            "mode": "id"
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        -1376,
+        896
+      ],
+      "id": "26891ca3-a2f2-419d-9776-cf89cb255b3b",
+      "name": "Google Calendar — Horários ocupados",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "0upxFuPMSuuMEXno",
+          "name": "Novo Teste"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const request = $('Preparar janela').first().json;\nconst busy = $input.all().map(i => i.json).filter(i => i.start && i.end).map(i => ({start:new Date(i.start).getTime(),end:new Date(i.end).getTime()}));\nconst fmt = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'});\nconst key = d => { const p=Object.fromEntries(fmt.formatToParts(d).map(x=>[x.type,x.value])); return `${p.year}-${p.month}-${p.day}`; };\nconst pad = n => String(n).padStart(2,'0');\nconst slots=[];\nconst now=Date.now();\nfor(let offset=1;offset<=request.days;offset++){\n  const probe=new Date(now+offset*86400000);\n  const date=key(probe);\n  const noon=new Date(`${date}T12:00:00-03:00`);\n  const weekday=noon.getUTCDay();\n  if(weekday===0||weekday===6) continue;\n  for(let minute=9*60;minute+request.duration<=18*60;minute+=30){\n    const hh=pad(Math.floor(minute/60)), mm=pad(minute%60);\n    const start=new Date(`${date}T${hh}:${mm}:00-03:00`);\n    const end=new Date(start.getTime()+request.duration*60000);\n    if(start.getTime()<now+24*60*60*1000) continue;\n    if(busy.some(b=>start.getTime()<b.end && end.getTime()>b.start)) continue;\n    slots.push({start:start.toISOString(),end:end.toISOString()});\n  }\n}\nreturn [{json:{ok:true,timezone:'America/Sao_Paulo',duration:request.duration,slots:slots.slice(0,80)}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1136,
+        896
+      ],
+      "id": "4830f6e0-ae94-4134-902e-3319f250fa9d",
+      "name": "Gerar horários livres"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -896,
+        896
+      ],
+      "id": "dc1adf66-7280-40bd-9a4f-83982ed60a6e",
+      "name": "Responder horários"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "epic-calendar-booking",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1888,
+        1328
+      ],
+      "id": "f0cf2ade-9385-4dbf-ab86-32133483c76e",
+      "name": "Webhook — Agendar",
+      "webhookId": "b6746f27-a775-4485-b409-f6ec7a26cc3b",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "br5TOpMcJI89zVaX",
+          "name": "X-EPIC-Webhook-Secret"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1B7vKFpDuAIqA52sUvBhfdVnktSfbLYNXlbihMzUHe9I",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Leads",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "lead_id",
+              "lookupValue": "={{ $('Webhook — Agendar').item.json.body.lead_id }}"
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1648,
+        1328
+      ],
+      "id": "99b843fc-12c3-4516-ac05-b6517564b125",
+      "name": "Sheets — Buscar lead",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ll6JS5CvdXwc7fig",
+          "name": "Lisboa.Co - Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const lead=$input.first().json;\nconst request=$('Webhook — Agendar').first().json.body;\nif(!lead.lead_id) throw new Error('Lead não encontrado');\nif(lead.route_key==='nutrition'||Number(lead.epic_score)<40) throw new Error('Lead não elegível para agenda');\nconst duration=Number(lead.calendar_duration);\nif(![30,45].includes(duration)) throw new Error('Duração de agenda inválida');\nconst start=new Date(request.start);\nif(Number.isNaN(start.getTime())||start.getTime()<Date.now()+60*60*1000) throw new Error('Horário inválido');\nconst end=new Date(start.getTime()+duration*60000);\nreturn [{json:{...lead,start:start.toISOString(),end:end.toISOString(),calendar_duration:duration}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1408,
+        1328
+      ],
+      "id": "1b6da7c3-ec55-4452-a919-9665e4e3ad61",
+      "name": "Validar lead e horário"
+    },
+    {
+      "parameters": {
+        "resource": "calendar",
+        "calendar": {
+          "__rl": true,
+          "value": "c_6c88ffec1dc61b3a97edaa8d93d714e090e4b0c39a8984aa932b4c52d6f9eaab@group.calendar.google.com",
+          "mode": "id"
+        },
+        "timeMin": "={{ $json.start }}",
+        "timeMax": "={{ $json.end }}",
+        "options": {
+          "outputFormat": "availability",
+          "timezone": {
+            "__rl": true,
+            "value": "America/Sao_Paulo",
+            "mode": "id"
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        -1168,
+        1328
+      ],
+      "id": "b1441ee7-48bd-4f22-a27f-e1e84754041b",
+      "name": "Google Calendar — Revalidar horário",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "0upxFuPMSuuMEXno",
+          "name": "Novo Teste"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5a676cbf-e93e-42b0-a18f-6eebcb7c49b6",
+              "leftValue": "={{ $json.available }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -928,
+        1328
+      ],
+      "id": "fee7f0aa-6c51-419f-9b02-51f81818eef2",
+      "name": "Horário ainda está livre?"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "c_6c88ffec1dc61b3a97edaa8d93d714e090e4b0c39a8984aa932b4c52d6f9eaab@group.calendar.google.com",
+          "mode": "id"
+        },
+        "start": "={{ $('Validar lead e horário').item.json.start }}",
+        "end": "={{ $('Validar lead e horário').item.json.end }}",
+        "useDefaultReminders": false,
+        "additionalFields": {
+          "attendees": [
+            "={{ $('Validar lead e horário').item.json.email }}"
+          ],
+          "conferenceDataUi": {
+            "conferenceDataValues": {
+              "conferenceSolution": "hangoutsMeet"
+            }
+          },
+          "description": "=Capital: {{ $('Validar lead e horário').item.json.epic_capital_90d }}\nObjeção principal: {{ $('Validar lead e horário').item.json.epic_objecao_principal }}\nObjeção final: {{ $('Validar lead e horário').item.json.epic_objecao_final }}\nScore: {{ $('Validar lead e horário').item.json.epic_score }}",
+          "guestsCanInviteOthers": false,
+          "guestsCanModify": false,
+          "sendUpdates": "all",
+          "showMeAs": "opaque",
+          "summary": "=EPIC | Conversa com {{ $('Validar lead e horário').item.json.nome }}",
+          "visibility": "private"
+        },
+        "remindersUi": {
+          "remindersValues": [
+            {
+              "method": "email",
+              "minutes": 1440
+            },
+            {
+              "method": "popup",
+              "minutes": 60
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        -672,
+        1248
+      ],
+      "id": "f646eee2-514e-4dd7-a7de-f2f5bfc1af1c",
+      "name": "Google Calendar — Criar reunião",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "0upxFuPMSuuMEXno",
+          "name": "Novo Teste"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const event=$input.first().json;\nconst lead=$('Validar lead e horário').first().json;\nconst meet=event.hangoutLink || event.conferenceData?.entryPoints?.find(p=>p.entryPointType==='video')?.uri || '';\nreturn [{json:{...lead,last_event:'reuniao_agendada',updated_at:new Date().toISOString(),calendar_event_id:event.id ?? '',meeting_start:lead.start,meeting_end:lead.end,meet_url:meet,tag:lead.tag}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -416,
+        1248
+      ],
+      "id": "9d0bf9f5-91b0-4562-a365-5217e3960224",
+      "name": "Preparar confirmação"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1B7vKFpDuAIqA52sUvBhfdVnktSfbLYNXlbihMzUHe9I",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1B7vKFpDuAIqA52sUvBhfdVnktSfbLYNXlbihMzUHe9I/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "lead_id"
+          ],
+          "schema": [
+            {
+              "id": "lead_id",
+              "displayName": "lead_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_event_id",
+              "displayName": "last_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_event",
+              "displayName": "last_event",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "current_stage",
+              "displayName": "current_stage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "current_screen",
+              "displayName": "current_screen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "progress_percent",
+              "displayName": "progress_percent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "whatsapp",
+              "displayName": "whatsapp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "epic_perfil",
+              "displayName": "epic_perfil",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "epic_estrutura_us",
+              "displayName": "epic_estrutura_us",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "epic_experiencia_exterior",
+              "displayName": "epic_experiencia_exterior",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "epic_objecao_principal",
+              "displayName": "epic_objecao_principal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "epic_capital_90d",
+              "displayName": "epic_capital_90d",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "epic_liquidez",
+              "displayName": "epic_liquidez",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "epic_expectativa_retorno",
+              "displayName": "epic_expectativa_retorno",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "epic_motivador",
+              "displayName": "epic_motivador",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "epic_prioridade_0a10",
+              "displayName": "epic_prioridade_0a10",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "epic_prazo_aporte",
+              "displayName": "epic_prazo_aporte",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "epic_momento",
+              "displayName": "epic_momento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "epic_objecao_final",
+              "displayName": "epic_objecao_final",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "epic_score",
+              "displayName": "epic_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lead_temperature",
+              "displayName": "lead_temperature",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "route_key",
+              "displayName": "route_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tag",
+              "displayName": "tag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "calendar_duration",
+              "displayName": "calendar_duration",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "qualification_reason",
+              "displayName": "qualification_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "completed_at",
+              "displayName": "completed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "utm_source",
+              "displayName": "utm_source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "utm_medium",
+              "displayName": "utm_medium",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "utm_campaign",
+              "displayName": "utm_campaign",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "utm_content",
+              "displayName": "utm_content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "utm_term",
+              "displayName": "utm_term",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "fbclid",
+              "displayName": "fbclid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "gclid",
+              "displayName": "gclid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "creative_id",
+              "displayName": "creative_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "landing_url",
+              "displayName": "landing_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "referrer",
+              "displayName": "referrer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "calendar_event_id",
+              "displayName": "calendar_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "meeting_start",
+              "displayName": "meeting_start",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "meeting_end",
+              "displayName": "meeting_end",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "meet_url",
+              "displayName": "meet_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payload_json",
+              "displayName": "payload_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -176,
+        1248
+      ],
+      "id": "105fa44e-a166-449f-99ce-e2ad7142756a",
+      "name": "Sheets — Registrar reunião",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Tw7vmV5GDt7JZhMQ",
+          "name": "WT - Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, event_id: $json.calendar_event_id, start: $json.meeting_start, end: $json.meeting_end, meet_url: $json.meet_url } }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        64,
+        1248
+      ],
+      "id": "c65ab1fe-43cb-49ee-9d56-2a579f220318",
+      "name": "Responder confirmação"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: false, message: 'Este horário acabou de ser ocupado. Escolha outro.' } }}",
+        "options": {
+          "responseCode": 409
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -672,
+        1440
+      ],
+      "id": "96566a81-0eb3-4ef8-aa9b-606c418986bb",
+      "name": "Responder conflito"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://crm.lisboacapital.com.br/api/public/hooks/epic-leads",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ ...$json, crm_stage_key: 'scheduled' }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        304,
+        1248
+      ],
+      "id": "cf931b78-37c0-4694-a6b2-9e3b4df02755",
+      "name": "CRM — EPIC / Reunião agendada",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "br5TOpMcJI89zVaX",
+          "name": "X-EPIC-Webhook-Secret"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {
+        "content": "## Fluxo de página\nWebhook do form alimenta planilha com dados dos leads cadastrados",
+        "height": 320,
+        "width": 416
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2128,
+        304
+      ],
+      "typeVersion": 1,
+      "id": "84af1970-0d14-4a66-a695-5a72df4cc2e3",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Consulta de Agenda\nFluxo para consultar horários disponíveis na agenda criada com nome EPIC RENTAL CAR\nID da agenda = c_6c88ffec1dc61b3a97edaa8d93d714e090e4b0c39a8984aa932b4c52d6f9eaab@group.calendar.google.com\n",
+        "height": 336,
+        "width": 416
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2112,
+        720
+      ],
+      "typeVersion": 1,
+      "id": "a2b2b471-0506-494b-815a-b791b45c8cf9",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Marca reunião\nFluxo para marcar horário na agenda EPIC RENTAL CAR\nID da agenda = c_6c88ffec1dc61b3a97edaa8d93d714e090e4b0c39a8984aa932b4c52d6f9eaab@group.calendar.google.com\n",
+        "height": 336,
+        "width": 416
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2112,
+        1168
+      ],
+      "typeVersion": 1,
+      "id": "7126df2b-a56b-42a2-a5a3-e2689e391d47",
+      "name": "Sticky Note2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook — Leads": {
+      "main": [
+        [
+          {
+            "node": "Validar, pontuar e normalizar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar, pontuar e normalizar": {
+      "main": [
+        [
+          {
+            "node": "Sheets — Registrar evento",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Sheets — Atualizar lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheets — Atualizar lead": {
+      "main": [
+        [
+          {
+            "node": "Responder ao site",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Responder ao site": {
+      "main": [
+        [
+          {
+            "node": "Ramificar por score e rota",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ramificar por score e rota": {
+      "main": [
+        [
+          {
+            "node": "CRM — EPIC / Nutrição",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CRM — EPIC / Qualificado 30",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CRM — EPIC / Qualificado 45",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CRM — EPIC / Estratégico",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Atualização parcial — encerrar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook — Consultar agenda": {
+      "main": [
+        [
+          {
+            "node": "Preparar janela",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar janela": {
+      "main": [
+        [
+          {
+            "node": "Google Calendar — Horários ocupados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar — Horários ocupados": {
+      "main": [
+        [
+          {
+            "node": "Gerar horários livres",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar horários livres": {
+      "main": [
+        [
+          {
+            "node": "Responder horários",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook — Agendar": {
+      "main": [
+        [
+          {
+            "node": "Sheets — Buscar lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheets — Buscar lead": {
+      "main": [
+        [
+          {
+            "node": "Validar lead e horário",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar lead e horário": {
+      "main": [
+        [
+          {
+            "node": "Google Calendar — Revalidar horário",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar — Revalidar horário": {
+      "main": [
+        [
+          {
+            "node": "Horário ainda está livre?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Horário ainda está livre?": {
+      "main": [
+        [
+          {
+            "node": "Google Calendar — Criar reunião",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder conflito",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar — Criar reunião": {
+      "main": [
+        [
+          {
+            "node": "Preparar confirmação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar confirmação": {
+      "main": [
+        [
+          {
+            "node": "Sheets — Registrar reunião",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheets — Registrar reunião": {
+      "main": [
+        [
+          {
+            "node": "Responder confirmação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Responder confirmação": {
+      "main": [
+        [
+          {
+            "node": "CRM — EPIC / Reunião agendada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "114e00cb-7bea-4941-bba2-0300121267a7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2d946570092a86d9c7ad06bd1a4d02c366559a0792b5dca95ecb6b7fe9120c6c",
+    "lovableCrmWebhook": "https://crm.lisboacapital.com.br/api/public/hooks/epic-leads",
+    "lovableCrmCredential": "X-EPIC-Webhook-Secret"
+  },
+  "id": "yG6I1kdWdOM0Qbgw",
+  "tags": []
+}
