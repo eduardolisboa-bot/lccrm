@@ -9,33 +9,29 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AppRouteImport } from './routes/_app'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as AppActivitiesRouteImport } from './routes/_app/activities'
-import { Route as AppBackupsRouteImport } from './routes/_app/backups'
-import { Route as AppClientsRouteImport } from './routes/_app/clients'
-import { Route as AppCommissionsRouteImport } from './routes/_app/commissions'
-import { Route as AppCrmRouteImport } from './routes/_app/crm'
-import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
-import { Route as AppOpportunitiesRouteImport } from './routes/_app/opportunities'
-import { Route as AppPartnersRouteImport } from './routes/_app/partners'
-import { Route as AppSettingsRouteImport } from './routes/_app/settings'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppUsersRouteImport } from './routes/_app/users'
-import { Route as AppClientsIdRouteImport } from './routes/_app/clients.$id'
-import { Route as AppClientsDuplicatesRouteImport } from './routes/_app/clients.duplicates'
+import { Route as AppSettingsRouteImport } from './routes/_app/settings'
+import { Route as AppPartnersRouteImport } from './routes/_app/partners'
+import { Route as AppOpportunitiesRouteImport } from './routes/_app/opportunities'
+import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
+import { Route as AppCrmRouteImport } from './routes/_app/crm'
+import { Route as AppCommissionsRouteImport } from './routes/_app/commissions'
+import { Route as AppClientsRouteImport } from './routes/_app/clients'
+import { Route as AppBackupsRouteImport } from './routes/_app/backups'
+import { Route as AppActivitiesRouteImport } from './routes/_app/activities'
 import { Route as AppPartnersIdRouteImport } from './routes/_app/partners.$id'
-import { Route as ApiPublicHooksBackupRouteImport } from './routes/api/public/hooks/backup'
+import { Route as AppClientsDuplicatesRouteImport } from './routes/_app/clients.duplicates'
+import { Route as AppClientsIdRouteImport } from './routes/_app/clients.$id'
 import { Route as ApiPublicHooksEpicLeadsRouteImport } from './routes/api/public/hooks/epic-leads'
+import { Route as ApiPublicHooksBackupRouteImport } from './routes/api/public/hooks/backup'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AppRoute = AppRouteImport.update({
-  id: '/_app',
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -43,49 +39,18 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppActivitiesRoute = AppActivitiesRouteImport.update({
-  id: '/activities',
-  path: '/activities',
-  getParentRoute: () => AppRoute,
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AppBackupsRoute = AppBackupsRouteImport.update({
-  id: '/backups',
-  path: '/backups',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppClientsRoute = AppClientsRouteImport.update({
-  id: '/clients',
-  path: '/clients',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppCommissionsRoute = AppCommissionsRouteImport.update({
-  id: '/commissions',
-  path: '/commissions',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppCrmRoute = AppCrmRouteImport.update({
-  id: '/crm',
-  path: '/crm',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppDashboardRoute = AppDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppOpportunitiesRoute = AppOpportunitiesRouteImport.update({
-  id: '/opportunities',
-  path: '/opportunities',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppPartnersRoute = AppPartnersRouteImport.update({
-  id: '/partners',
-  path: '/partners',
+const AppUsersRoute = AppUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
   getParentRoute: () => AppRoute,
 } as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
@@ -93,34 +58,69 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppRoute,
 } as any)
-const AppUsersRoute = AppUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
+const AppPartnersRoute = AppPartnersRouteImport.update({
+  id: '/partners',
+  path: '/partners',
   getParentRoute: () => AppRoute,
 } as any)
-const AppClientsIdRoute = AppClientsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AppClientsRoute,
+const AppOpportunitiesRoute = AppOpportunitiesRouteImport.update({
+  id: '/opportunities',
+  path: '/opportunities',
+  getParentRoute: () => AppRoute,
 } as any)
-const AppClientsDuplicatesRoute = AppClientsDuplicatesRouteImport.update({
-  id: '/duplicates',
-  path: '/duplicates',
-  getParentRoute: () => AppClientsRoute,
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCrmRoute = AppCrmRouteImport.update({
+  id: '/crm',
+  path: '/crm',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCommissionsRoute = AppCommissionsRouteImport.update({
+  id: '/commissions',
+  path: '/commissions',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppClientsRoute = AppClientsRouteImport.update({
+  id: '/clients',
+  path: '/clients',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBackupsRoute = AppBackupsRouteImport.update({
+  id: '/backups',
+  path: '/backups',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppActivitiesRoute = AppActivitiesRouteImport.update({
+  id: '/activities',
+  path: '/activities',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppPartnersIdRoute = AppPartnersIdRouteImport.update({
   id: '/$id',
   path: '/$id',
   getParentRoute: () => AppPartnersRoute,
 } as any)
-const ApiPublicHooksBackupRoute = ApiPublicHooksBackupRouteImport.update({
-  id: '/api/public/hooks/backup',
-  path: '/api/public/hooks/backup',
-  getParentRoute: () => rootRouteImport,
+const AppClientsDuplicatesRoute = AppClientsDuplicatesRouteImport.update({
+  id: '/duplicates',
+  path: '/duplicates',
+  getParentRoute: () => AppClientsRoute,
+} as any)
+const AppClientsIdRoute = AppClientsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AppClientsRoute,
 } as any)
 const ApiPublicHooksEpicLeadsRoute = ApiPublicHooksEpicLeadsRouteImport.update({
   id: '/api/public/hooks/epic-leads',
   path: '/api/public/hooks/epic-leads',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicHooksBackupRoute = ApiPublicHooksBackupRouteImport.update({
+  id: '/api/public/hooks/backup',
+  path: '/api/public/hooks/backup',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -261,18 +261,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_app': {
-      id: '/_app'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AppRouteImport
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -282,67 +275,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/activities': {
-      id: '/_app/activities'
-      path: '/activities'
-      fullPath: '/activities'
-      preLoaderRoute: typeof AppActivitiesRouteImport
-      parentRoute: typeof AppRoute
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_app/backups': {
-      id: '/_app/backups'
-      path: '/backups'
-      fullPath: '/backups'
-      preLoaderRoute: typeof AppBackupsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/clients': {
-      id: '/_app/clients'
-      path: '/clients'
-      fullPath: '/clients'
-      preLoaderRoute: typeof AppClientsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/commissions': {
-      id: '/_app/commissions'
-      path: '/commissions'
-      fullPath: '/commissions'
-      preLoaderRoute: typeof AppCommissionsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/crm': {
-      id: '/_app/crm'
-      path: '/crm'
-      fullPath: '/crm'
-      preLoaderRoute: typeof AppCrmRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/dashboard': {
-      id: '/_app/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AppDashboardRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/opportunities': {
-      id: '/_app/opportunities'
-      path: '/opportunities'
-      fullPath: '/opportunities'
-      preLoaderRoute: typeof AppOpportunitiesRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/partners': {
-      id: '/_app/partners'
-      path: '/partners'
-      fullPath: '/partners'
-      preLoaderRoute: typeof AppPartnersRouteImport
+    '/_app/users': {
+      id: '/_app/users'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof AppUsersRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/settings': {
@@ -352,26 +303,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/users': {
-      id: '/_app/users'
-      path: '/users'
-      fullPath: '/users'
-      preLoaderRoute: typeof AppUsersRouteImport
+    '/_app/partners': {
+      id: '/_app/partners'
+      path: '/partners'
+      fullPath: '/partners'
+      preLoaderRoute: typeof AppPartnersRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/clients/$id': {
-      id: '/_app/clients/$id'
-      path: '/$id'
-      fullPath: '/clients/$id'
-      preLoaderRoute: typeof AppClientsIdRouteImport
-      parentRoute: typeof AppClientsRoute
+    '/_app/opportunities': {
+      id: '/_app/opportunities'
+      path: '/opportunities'
+      fullPath: '/opportunities'
+      preLoaderRoute: typeof AppOpportunitiesRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/_app/clients/duplicates': {
-      id: '/_app/clients/duplicates'
-      path: '/duplicates'
-      fullPath: '/clients/duplicates'
-      preLoaderRoute: typeof AppClientsDuplicatesRouteImport
-      parentRoute: typeof AppClientsRoute
+    '/_app/dashboard': {
+      id: '/_app/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/crm': {
+      id: '/_app/crm'
+      path: '/crm'
+      fullPath: '/crm'
+      preLoaderRoute: typeof AppCrmRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/commissions': {
+      id: '/_app/commissions'
+      path: '/commissions'
+      fullPath: '/commissions'
+      preLoaderRoute: typeof AppCommissionsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/clients': {
+      id: '/_app/clients'
+      path: '/clients'
+      fullPath: '/clients'
+      preLoaderRoute: typeof AppClientsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/backups': {
+      id: '/_app/backups'
+      path: '/backups'
+      fullPath: '/backups'
+      preLoaderRoute: typeof AppBackupsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/activities': {
+      id: '/_app/activities'
+      path: '/activities'
+      fullPath: '/activities'
+      preLoaderRoute: typeof AppActivitiesRouteImport
+      parentRoute: typeof AppRoute
     }
     '/_app/partners/$id': {
       id: '/_app/partners/$id'
@@ -380,18 +366,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPartnersIdRouteImport
       parentRoute: typeof AppPartnersRoute
     }
-    '/api/public/hooks/backup': {
-      id: '/api/public/hooks/backup'
-      path: '/api/public/hooks/backup'
-      fullPath: '/api/public/hooks/backup'
-      preLoaderRoute: typeof ApiPublicHooksBackupRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_app/clients/duplicates': {
+      id: '/_app/clients/duplicates'
+      path: '/duplicates'
+      fullPath: '/clients/duplicates'
+      preLoaderRoute: typeof AppClientsDuplicatesRouteImport
+      parentRoute: typeof AppClientsRoute
+    }
+    '/_app/clients/$id': {
+      id: '/_app/clients/$id'
+      path: '/$id'
+      fullPath: '/clients/$id'
+      preLoaderRoute: typeof AppClientsIdRouteImport
+      parentRoute: typeof AppClientsRoute
     }
     '/api/public/hooks/epic-leads': {
       id: '/api/public/hooks/epic-leads'
       path: '/api/public/hooks/epic-leads'
       fullPath: '/api/public/hooks/epic-leads'
       preLoaderRoute: typeof ApiPublicHooksEpicLeadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/backup': {
+      id: '/api/public/hooks/backup'
+      path: '/api/public/hooks/backup'
+      fullPath: '/api/public/hooks/backup'
+      preLoaderRoute: typeof ApiPublicHooksBackupRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
