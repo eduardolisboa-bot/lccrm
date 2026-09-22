@@ -466,7 +466,10 @@ export type Database = {
           email: string | null
           endereco: string | null
           estado: string | null
+          external_lead_id: string | null
           id: string
+          integration_payload: Json
+          integration_source: string | null
           nome: string
           nome_fantasia: string | null
           parceiro_id: string | null
@@ -489,7 +492,10 @@ export type Database = {
           email?: string | null
           endereco?: string | null
           estado?: string | null
+          external_lead_id?: string | null
           id?: string
+          integration_payload?: Json
+          integration_source?: string | null
           nome: string
           nome_fantasia?: string | null
           parceiro_id?: string | null
@@ -512,7 +518,10 @@ export type Database = {
           email?: string | null
           endereco?: string | null
           estado?: string | null
+          external_lead_id?: string | null
           id?: string
+          integration_payload?: Json
+          integration_source?: string | null
           nome?: string
           nome_fantasia?: string | null
           parceiro_id?: string | null
@@ -704,8 +713,13 @@ export type Database = {
           created_at: string
           data_proxima_acao: string | null
           etapa_id: string | null
+          external_lead_id: string | null
           funnel_id: string
           id: string
+          integration_payload: Json
+          integration_source: string | null
+          integration_stage: string | null
+          integration_updated_at: string | null
           observacoes: string | null
           origem: Database["public"]["Enums"]["opp_origem"]
           parceiro_id: string | null
@@ -724,8 +738,13 @@ export type Database = {
           created_at?: string
           data_proxima_acao?: string | null
           etapa_id?: string | null
+          external_lead_id?: string | null
           funnel_id: string
           id?: string
+          integration_payload?: Json
+          integration_source?: string | null
+          integration_stage?: string | null
+          integration_updated_at?: string | null
           observacoes?: string | null
           origem?: Database["public"]["Enums"]["opp_origem"]
           parceiro_id?: string | null
@@ -744,8 +763,13 @@ export type Database = {
           created_at?: string
           data_proxima_acao?: string | null
           etapa_id?: string | null
+          external_lead_id?: string | null
           funnel_id?: string
           id?: string
+          integration_payload?: Json
+          integration_source?: string | null
+          integration_stage?: string | null
+          integration_updated_at?: string | null
           observacoes?: string | null
           origem?: Database["public"]["Enums"]["opp_origem"]
           parceiro_id?: string | null
